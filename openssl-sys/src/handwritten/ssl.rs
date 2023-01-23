@@ -555,8 +555,12 @@ cfg_if! {
             pub fn SSL_CTX_use_sign_PrivateKey_file(ctx: *mut SSL_CTX, file: *const c_char, type_: c_int) -> c_int;
             pub fn SSL_CTX_enable_ntls(ctx: *mut SSL_CTX);
             pub fn SSL_CTX_disable_ntls(ctx: *mut SSL_CTX);
+            pub fn SSL_CTX_enable_force_ntls(ctx: *mut SSL_CTX);
+            pub fn SSL_CTX_disable_force_ntls(ctx: *mut SSL_CTX);
             pub fn SSL_enable_ntls(s: *mut SSL);
             pub fn SSL_disable_ntls(s: *mut SSL);
+            pub fn SSL_enable_force_ntls(s: *mut SSL);
+            pub fn SSL_disable_force_ntls(s: *mut SSL);
             pub fn SSL_CTX_enable_sm_tls13_strict(ctx: *mut SSL_CTX);
             pub fn SSL_CTX_disable_sm_tls13_strict(ctx: *mut SSL_CTX);
             pub fn SSL_enable_sm_tls13_strict(s: *mut SSL);
