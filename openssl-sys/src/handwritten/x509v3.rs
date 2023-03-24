@@ -1,9 +1,10 @@
+use super::super::*;
 use libc::*;
-use *;
 
 pub enum CONF_METHOD {}
 
 extern "C" {
+    pub fn GENERAL_NAME_new() -> *mut GENERAL_NAME;
     pub fn GENERAL_NAME_free(name: *mut GENERAL_NAME);
 }
 
