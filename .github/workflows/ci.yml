@@ -153,7 +153,7 @@ jobs:
             - false
           library:
             - name: boringssl
-              version: 93e8d4463d59d671e9c5c6171226341f04b07907
+              version: bcecc7d834fc44ad257b2f23f88e1cf597ab2736
             - name: openssl
               version: vendored
             - name: openssl
@@ -181,7 +181,7 @@ jobs:
               bindgen: true
               library:
                 name: libressl
-                version: 3.7.1
+                version: 3.7.2
             - target: x86_64-unknown-linux-gnu
               bindgen: false
               library:
@@ -191,7 +191,7 @@ jobs:
               bindgen: false
               library:
                 name: libressl
-                version: 3.7.1
+                version: 3.7.2
       name: ${{ matrix.target }}-${{ matrix.library.name }}-${{ matrix.library.version }}-${{ matrix.bindgen }}
       runs-on: ubuntu-latest
       env:
@@ -310,7 +310,7 @@ jobs:
         - run: |
             mkdir -p .cargo
             echo '[patch.crates-io]' > .cargo/config.toml
-            echo 'bssl-sys = { path = "'$OPENSSL_DIR'/rust" }' >> .cargo/config.toml
+            echo 'bssl-sys = { path = "'$OPENSSL_DIR'/rust/bssl-sys" }' >> .cargo/config.toml
           if: matrix.library.name == 'boringssl' && !matrix.bindgen
         - uses: actions/cache@v3
           with:

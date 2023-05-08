@@ -2,6 +2,46 @@
 
 ## [Unreleased]
 
+## [v0.10.52] - 2023-04-24
+
+### Added
+
+* Added `DhRef::check_key`.
+* Added `Id::POLY1305`.
+* Added `X509Ref::subject_key_id`, `X509Ref::authority_key_id`, `X509Ref::authority_issuer`, and `X509Ref::authority_serial`.
+
+
+## [v0.10.51] - 2023-04-20
+
+### Added
+
+* Added `X509RevokedRef::issuer_name` and `X509RevokedRef::reason_code`.
+* Added `Dh::set_key` and `Dh::set_public_key`
+* Added `Asn1OctetString` and `Asn1OctetStringRef1`
+* Added `X509Extension::new_from_der`
+
+### Deprecated
+
+* Deprecated `X509Extension::new` and `X509Extension::new_nid` in favor of `X509Extension::new_from_der` and the `extensions` module.
+* Deprecated `X509Extension::add_alias`, it is not required with `new_from_der` or the `extensions` module.
+
+## [v0.10.50] - 2023-04-09
+
+### Added
+
+* Added `CipherCtxRef::cipher_update_inplace`.
+
+## [v0.10.49] - 2023-04-01
+
+### Fixed
+
+* `SslConnector` no longer sets the SNI extension when connecting to an IP address.
+
+### Added
+
+* Implemented `Ord`, `PartialOrd`, `Eq`, and `PartialEq` for `Asn1Integer` and `Asn1IntegerRef`.
+* Added `X509Ref::crl_distribution_points`, and `DistPoint`.
+
 ## [v0.10.48] - 2023-03-23
 
 ### Fixed
@@ -707,7 +747,11 @@
 
 Look at the [release tags] for information about older releases.
 
-[Unreleased]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.48...master
+[Unreleased]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.52...master
+[v0.10.52]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.51...openssl-v0.10.52
+[v0.10.51]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.50...openssl-v0.10.51
+[v0.10.50]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.49...openssl-v0.10.50
+[v0.10.49]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.48...openssl-v0.10.49
 [v0.10.48]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.47...openssl-v0.10.48
 [v0.10.47]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.46...openssl-v0.10.47
 [v0.10.46]: https://github.com/sfackler/rust-openssl/compare/openssl-v0.10.45...openssl-v0.10.46

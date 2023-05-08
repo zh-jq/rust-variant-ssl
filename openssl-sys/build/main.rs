@@ -4,7 +4,6 @@
     clippy::unusual_byte_groupings
 )]
 
-extern crate autocfg;
 #[cfg(feature = "bindgen")]
 extern crate bindgen;
 extern crate cc;
@@ -86,8 +85,6 @@ fn check_ssl_kind() {
 }
 
 fn main() {
-    check_rustc_versions();
-
     check_ssl_kind();
 
     let target = env::var("TARGET").unwrap();
@@ -143,14 +140,6 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=crypt32");
         println!("cargo:rustc-link-lib=dylib=ws2_32");
         println!("cargo:rustc-link-lib=dylib=advapi32");
-    }
-}
-
-fn check_rustc_versions() {
-    let cfg = autocfg::new();
-
-    if cfg.probe_rustc_version(1, 31) {
-        println!("cargo:rustc-cfg=const_fn");
     }
 }
 
@@ -314,6 +303,7 @@ See rust-openssl documentation for more information:
             (3, 6, _) => ('3', '6', 'x'),
             (3, 7, 0) => ('3', '7', '0'),
             (3, 7, 1) => ('3', '7', '1'),
+            (3, 7, _) => ('3', '7', 'x'),
             _ => version_error(),
         };
 
@@ -356,7 +346,7 @@ fn version_error() -> ! {
         "
 
 This crate is only compatible with OpenSSL (version 1.0.1 through 1.1.1, or 3.0.0), or LibreSSL 2.5
-through 3.7.1, but a different version of OpenSSL was found. The build is now aborting
+through 3.7.x, but a different version of OpenSSL was found. The build is now aborting
 due to this version mismatch.
 
 "

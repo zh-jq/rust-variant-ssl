@@ -51,13 +51,13 @@ pub struct Nid(c_int);
 #[allow(non_snake_case)]
 impl Nid {
     /// Create a `Nid` from an integer representation.
-    pub fn from_raw(raw: c_int) -> Nid {
+    pub const fn from_raw(raw: c_int) -> Nid {
         Nid(raw)
     }
 
     /// Return the integer representation of a `Nid`.
     #[allow(clippy::trivially_copy_pass_by_ref)]
-    pub fn as_raw(&self) -> c_int {
+    pub const fn as_raw(&self) -> c_int {
         self.0
     }
 
@@ -1165,10 +1165,13 @@ mod test {
         assert_eq!(nid.short_name().unwrap(), "foo");
         assert_eq!(nid.long_name().unwrap(), "foobar");
 
-        let invalid_oid = Nid::create("invalid_oid", "invalid", "invalid");
-        assert!(
-            invalid_oid.is_err(),
-            "invalid_oid should not return a valid value"
-        );
+        // Due to a bug in OpenSSL 3.1.0, this test crashes on Windows
+        if !cfg!(ossl310) {
+            let invalid_oid = Nid::create("invalid_oid", "invalid", "invalid");
+            assert!(
+                invalid_oid.is_err(),
+                "invalid_oid should not return a valid value"
+            );
+        }
     }
 }

@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+## [v0.9.87] - 2023-04-24
+
+### Added
+
+* Added `DH_CHECK`.
+* Added `CMAC_CTX_new`, `CMAC_CTX_free`, `CMAC_Init`, `CMAC_Update`, `CMAC_Final`, and `CMAC_CTX_copy`.
+* Added `EVP_default_properties_is_fips_enabled`.
+* Added `X509_get0_subject_key_id`, `X509_get0_authority_key_id`, `X509_get0_authority_issuer`, and `X509_get0_authority_serial`.
+* Added `NID_poly1305`.
+
+
+## [v0.9.86] - 2023-04-20
+
+### Fixed
+
+* Fixed BoringSSL support with the latest bindgen release.
+
+### Added
+
+* Added bindings for PKCS#7 functions and more X.509 functions.
+
+
+## [v0.9.85] - 2023-04-09
+
+### Added
+
+* Added support for LibreSSL 3.7.x.
+
+## [v0.9.84] - 2023-04-01
+
+### Added
+
+* Added `ASN1_INTEGER_dup` and `ASN1_INTEGER_cmp`.
+* Added `stack_st_X509_NAME_ENTRY`.
+* Added `DIST_POINT_NAME`, `DIST_POINT`, `stack_st_DIST_POINT`, `DIST_POINT_free`, and `DIST_POINT_NAME_free`.
+
 ## [v0.9.83] - 2023-03-23
 
 ### Fixed
@@ -410,7 +446,11 @@ Fixed builds against OpenSSL built with `no-cast`.
 * Added `X509_verify` and `X509_REQ_verify`.
 * Added `EVP_MD_type` and `EVP_GROUP_get_curve_name`.
 
-[Unreleased]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.83..master
+[Unreleased]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.87..master
+[v0.9.87]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.86...openssl-sys-v0.9.87
+[v0.9.86]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.85...openssl-sys-v0.9.86
+[v0.9.85]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.84...openssl-sys-v0.9.85
+[v0.9.84]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.83...openssl-sys-v0.9.84
 [v0.9.83]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.82...openssl-sys-v0.9.83
 [v0.9.82]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.81...openssl-sys-v0.9.82
 [v0.9.81]: https://github.com/sfackler/rust-openssl/compare/openssl-sys-v0.9.80...openssl-sys-v0.9.81

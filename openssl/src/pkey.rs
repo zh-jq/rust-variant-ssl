@@ -97,6 +97,8 @@ impl Id {
     pub const X25519: Id = Id(ffi::EVP_PKEY_X25519);
     #[cfg(ossl111)]
     pub const X448: Id = Id(ffi::EVP_PKEY_X448);
+    #[cfg(ossl111)]
+    pub const POLY1305: Id = Id(ffi::EVP_PKEY_POLY1305);
 
     /// Creates a `Id` from an integer representation.
     pub fn from_raw(value: c_int) -> Id {
@@ -244,7 +246,11 @@ where
     where
         U: HasPublic,
     {
-        unsafe { ffi::EVP_PKEY_cmp(self.as_ptr(), other.as_ptr()) == 1 }
+        let res = unsafe { ffi::EVP_PKEY_cmp(self.as_ptr(), other.as_ptr()) == 1 };
+        // Clear the stack. OpenSSL will put an error on the stack when the
+        // keys are different types in some situations.
+        let _ = ErrorStack::get();
+        res
     }
 
     /// Raw byte representation of a public key.
@@ -885,6 +891,7 @@ mod tests {
     use crate::dh::Dh;
     use crate::dsa::Dsa;
     use crate::ec::EcKey;
+    use crate::error::Error;
     use crate::nid::Nid;
     use crate::rsa::Rsa;
     use crate::symm::Cipher;
@@ -1167,5 +1174,18 @@ mod tests {
     fn test_ec_gen() {
         let key = PKey::ec_gen("prime256v1").unwrap();
         assert!(key.ec_key().is_ok());
+    }
+
+    #[test]
+    fn test_public_eq() {
+        let rsa = Rsa::generate(2048).unwrap();
+        let pkey1 = PKey::from_rsa(rsa).unwrap();
+
+        let group = crate::ec::EcGroup::from_curve_name(Nid::X9_62_PRIME256V1).unwrap();
+        let ec_key = EcKey::generate(&group).unwrap();
+        let pkey2 = PKey::from_ec_key(ec_key).unwrap();
+
+        assert!(!pkey1.public_eq(&pkey2));
+        assert!(Error::get().is_none());
     }
 }

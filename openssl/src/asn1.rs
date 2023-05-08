@@ -27,8 +27,8 @@
 use cfg_if::cfg_if;
 use foreign_types::{ForeignType, ForeignTypeRef};
 use libc::{c_char, c_int, c_long, time_t};
-#[cfg(ossl102)]
 use std::cmp::Ordering;
+use std::convert::TryInto;
 use std::ffi::CString;
 use std::fmt;
 use std::ptr;
@@ -512,6 +512,23 @@ impl Asn1Integer {
     }
 }
 
+impl Ord for Asn1Integer {
+    fn cmp(&self, other: &Self) -> Ordering {
+        Asn1IntegerRef::cmp(self, other)
+    }
+}
+impl PartialOrd for Asn1Integer {
+    fn partial_cmp(&self, other: &Asn1Integer) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Eq for Asn1Integer {}
+impl PartialEq for Asn1Integer {
+    fn eq(&self, other: &Asn1Integer) -> bool {
+        Asn1IntegerRef::eq(self, other)
+    }
+}
+
 impl Asn1IntegerRef {
     #[allow(missing_docs, clippy::unnecessary_cast)]
     #[deprecated(since = "0.10.6", note = "use to_bn instead")]
@@ -535,6 +552,30 @@ impl Asn1IntegerRef {
     #[corresponds(ASN1_INTEGER_set)]
     pub fn set(&mut self, value: i32) -> Result<(), ErrorStack> {
         unsafe { cvt(ffi::ASN1_INTEGER_set(self.as_ptr(), value as c_long)).map(|_| ()) }
+    }
+
+    /// Creates a new Asn1Integer with the same value.
+    #[corresponds(ASN1_INTEGER_dup)]
+    pub fn to_owned(&self) -> Result<Asn1Integer, ErrorStack> {
+        unsafe { cvt_p(ffi::ASN1_INTEGER_dup(self.as_ptr())).map(|p| Asn1Integer::from_ptr(p)) }
+    }
+}
+
+impl Ord for Asn1IntegerRef {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let res = unsafe { ffi::ASN1_INTEGER_cmp(self.as_ptr(), other.as_ptr()) };
+        res.cmp(&0)
+    }
+}
+impl PartialOrd for Asn1IntegerRef {
+    fn partial_cmp(&self, other: &Asn1IntegerRef) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Eq for Asn1IntegerRef {}
+impl PartialEq for Asn1IntegerRef {
+    fn eq(&self, other: &Asn1IntegerRef) -> bool {
+        self.cmp(other) == Ordering::Equal
     }
 }
 
@@ -563,6 +604,46 @@ impl Asn1BitStringRef {
     #[corresponds(ASN1_STRING_length)]
     pub fn len(&self) -> usize {
         unsafe { ffi::ASN1_STRING_length(self.as_ptr() as *const _) as usize }
+    }
+
+    /// Determines if the string is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+foreign_type_and_impl_send_sync! {
+    type CType = ffi::ASN1_OCTET_STRING;
+    fn drop = ffi::ASN1_OCTET_STRING_free;
+    /// ASN.1 OCTET STRING type
+    pub struct Asn1OctetString;
+    /// A reference to an [`Asn1OctetString`].
+    pub struct Asn1OctetStringRef;
+}
+
+impl Asn1OctetString {
+    /// Creates an Asn1OctetString from bytes
+    pub fn new_from_bytes(value: &[u8]) -> Result<Self, ErrorStack> {
+        ffi::init();
+        unsafe {
+            let s = cvt_p(ffi::ASN1_OCTET_STRING_new())?;
+            ffi::ASN1_OCTET_STRING_set(s, value.as_ptr(), value.len().try_into().unwrap());
+            Ok(Self::from_ptr(s))
+        }
+    }
+}
+
+impl Asn1OctetStringRef {
+    /// Returns the octet string as an array of bytes.
+    #[corresponds(ASN1_STRING_get0_data)]
+    pub fn as_slice(&self) -> &[u8] {
+        unsafe { slice::from_raw_parts(ASN1_STRING_get0_data(self.as_ptr().cast()), self.len()) }
+    }
+
+    /// Returns the number of bytes in the octet string.
+    #[corresponds(ASN1_STRING_length)]
+    pub fn len(&self) -> usize {
+        unsafe { ffi::ASN1_STRING_length(self.as_ptr().cast()) as usize }
     }
 
     /// Determines if the string is empty.
@@ -666,6 +747,32 @@ cfg_if! {
     }
 }
 
+foreign_type_and_impl_send_sync! {
+    type CType = ffi::ASN1_ENUMERATED;
+    fn drop = ffi::ASN1_ENUMERATED_free;
+
+    /// An ASN.1 enumerated.
+    pub struct Asn1Enumerated;
+    /// A reference to an [`Asn1Enumerated`].
+    pub struct Asn1EnumeratedRef;
+}
+
+impl Asn1EnumeratedRef {
+    /// Get the value, if it fits in the required bounds.
+    #[corresponds(ASN1_ENUMERATED_get_int64)]
+    #[cfg(ossl110)]
+    pub fn get_i64(&self) -> Result<i64, ErrorStack> {
+        let mut crl_reason = 0;
+        unsafe {
+            cvt(ffi::ASN1_ENUMERATED_get_int64(
+                &mut crl_reason,
+                self.as_ptr(),
+            ))?;
+        }
+        Ok(crl_reason)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -750,6 +857,28 @@ mod tests {
     }
 
     #[test]
+    fn integer_to_owned() {
+        let a = Asn1Integer::from_bn(&BigNum::from_dec_str("42").unwrap()).unwrap();
+        let b = a.to_owned().unwrap();
+        assert_eq!(
+            a.to_bn().unwrap().to_dec_str().unwrap().to_string(),
+            b.to_bn().unwrap().to_dec_str().unwrap().to_string(),
+        );
+        assert_ne!(a.as_ptr(), b.as_ptr());
+    }
+
+    #[test]
+    fn integer_cmp() {
+        let a = Asn1Integer::from_bn(&BigNum::from_dec_str("42").unwrap()).unwrap();
+        let b = Asn1Integer::from_bn(&BigNum::from_dec_str("42").unwrap()).unwrap();
+        let c = Asn1Integer::from_bn(&BigNum::from_dec_str("43").unwrap()).unwrap();
+        assert!(a == b);
+        assert!(a != c);
+        assert!(a < c);
+        assert!(c > b);
+    }
+
+    #[test]
     fn object_from_str() {
         let object = Asn1Object::from_str("2.16.840.1.101.3.4.2.1").unwrap();
         assert_eq!(object.nid(), Nid::SHA256);
@@ -770,5 +899,12 @@ mod tests {
             object.as_slice(),
             &[0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01],
         );
+    }
+
+    #[test]
+    fn asn1_octet_string() {
+        let octet_string = Asn1OctetString::new_from_bytes(b"hello world").unwrap();
+        assert_eq!(octet_string.as_slice(), b"hello world");
+        assert_eq!(octet_string.len(), 11);
     }
 }

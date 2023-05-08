@@ -24,8 +24,8 @@ use std::slice;
 use std::str;
 
 use crate::asn1::{
-    Asn1BitStringRef, Asn1IntegerRef, Asn1Object, Asn1ObjectRef, Asn1StringRef, Asn1TimeRef,
-    Asn1Type,
+    Asn1BitStringRef, Asn1Enumerated, Asn1IntegerRef, Asn1Object, Asn1ObjectRef,
+    Asn1OctetStringRef, Asn1StringRef, Asn1TimeRef, Asn1Type,
 };
 use crate::bio::MemBioSlice;
 use crate::conf::ConfRef;
@@ -49,6 +49,16 @@ pub mod store;
 
 #[cfg(test)]
 mod tests;
+
+/// A type of X509 extension.
+///
+/// # Safety
+/// The value of NID and Output must match those in OpenSSL so that
+/// `Output::from_ptr_opt(*_get_ext_d2i(*, NID, ...))` is valid.
+pub unsafe trait ExtensionType {
+    const NID: Nid;
+    type Output: ForeignType;
+}
 
 foreign_type_and_impl_send_sync! {
     type CType = ffi::X509_STORE_CTX;
@@ -391,7 +401,10 @@ impl X509Ref {
     /// Returns the hash of the certificates subject
     #[corresponds(X509_subject_name_hash)]
     pub fn subject_name_hash(&self) -> u32 {
-        unsafe { ffi::X509_subject_name_hash(self.as_ptr()) as u32 }
+        #[allow(clippy::unnecessary_cast)]
+        unsafe {
+            ffi::X509_subject_name_hash(self.as_ptr()) as u32
+        }
     }
 
     /// Returns this certificate's issuer name.
@@ -406,7 +419,10 @@ impl X509Ref {
     /// Returns the hash of the certificates issuer
     #[corresponds(X509_issuer_name_hash)]
     pub fn issuer_name_hash(&self) -> u32 {
-        unsafe { ffi::X509_issuer_name_hash(self.as_ptr()) as u32 }
+        #[allow(clippy::unnecessary_cast)]
+        unsafe {
+            ffi::X509_issuer_name_hash(self.as_ptr()) as u32
+        }
     }
 
     /// Returns this certificate's subject alternative name entries, if they exist.
@@ -416,6 +432,20 @@ impl X509Ref {
             let stack = ffi::X509_get_ext_d2i(
                 self.as_ptr(),
                 ffi::NID_subject_alt_name,
+                ptr::null_mut(),
+                ptr::null_mut(),
+            );
+            Stack::from_ptr_opt(stack as *mut _)
+        }
+    }
+
+    /// Returns this certificate's CRL distribution points, if they exist.
+    #[corresponds(X509_get_ext_d2i)]
+    pub fn crl_distribution_points(&self) -> Option<Stack<DistPoint>> {
+        unsafe {
+            let stack = ffi::X509_get_ext_d2i(
+                self.as_ptr(),
+                ffi::NID_crl_distribution_points,
                 ptr::null_mut(),
                 ptr::null_mut(),
             );
@@ -450,6 +480,46 @@ impl X509Ref {
                 ptr::null_mut(),
             );
             Stack::from_ptr_opt(stack as *mut _)
+        }
+    }
+
+    /// Returns this certificate's subject key id, if it exists.
+    #[corresponds(X509_get0_subject_key_id)]
+    #[cfg(ossl110)]
+    pub fn subject_key_id(&self) -> Option<&Asn1OctetStringRef> {
+        unsafe {
+            let data = ffi::X509_get0_subject_key_id(self.as_ptr());
+            Asn1OctetStringRef::from_const_ptr_opt(data)
+        }
+    }
+
+    /// Returns this certificate's authority key id, if it exists.
+    #[corresponds(X509_get0_authority_key_id)]
+    #[cfg(ossl110)]
+    pub fn authority_key_id(&self) -> Option<&Asn1OctetStringRef> {
+        unsafe {
+            let data = ffi::X509_get0_authority_key_id(self.as_ptr());
+            Asn1OctetStringRef::from_const_ptr_opt(data)
+        }
+    }
+
+    /// Returns this certificate's authority issuer name entries, if they exist.
+    #[corresponds(X509_get0_authority_issuer)]
+    #[cfg(ossl111d)]
+    pub fn authority_issuer(&self) -> Option<&StackRef<GeneralName>> {
+        unsafe {
+            let stack = ffi::X509_get0_authority_issuer(self.as_ptr());
+            StackRef::from_const_ptr_opt(stack)
+        }
+    }
+
+    /// Returns this certificate's authority serial number, if it exists.
+    #[corresponds(X509_get0_authority_serial)]
+    #[cfg(ossl111d)]
+    pub fn authority_serial(&self) -> Option<&Asn1IntegerRef> {
+        unsafe {
+            let r = ffi::X509_get0_authority_serial(self.as_ptr());
+            Asn1IntegerRef::from_const_ptr_opt(r)
         }
     }
 
@@ -548,6 +618,7 @@ impl X509Ref {
     /// Note that `0` return value stands for version 1, `1` for version 2 and so on.
     #[corresponds(X509_get_version)]
     #[cfg(ossl110)]
+    #[allow(clippy::unnecessary_cast)]
     pub fn version(&self) -> i32 {
         unsafe { ffi::X509_get_version(self.as_ptr()) as i32 }
     }
@@ -811,6 +882,13 @@ impl X509Extension {
     /// mini-language that can read arbitrary files.
     ///
     /// See the extension module for builder types which will construct certain common extensions.
+    ///
+    /// This function is deprecated, `X509Extension::new_from_der` or the
+    /// types in `x509::extension` should be used in its place.
+    #[deprecated(
+        note = "Use x509::extension types or new_from_der instead",
+        since = "0.10.51"
+    )]
     pub fn new(
         conf: Option<&ConfRef>,
         context: Option<&X509v3Context<'_>>,
@@ -856,6 +934,13 @@ impl X509Extension {
     /// mini-language that can read arbitrary files.
     ///
     /// See the extension module for builder types which will construct certain common extensions.
+    ///
+    /// This function is deprecated, `X509Extension::new_from_der` or the
+    /// types in `x509::extension` should be used in its place.
+    #[deprecated(
+        note = "Use x509::extension types or new_from_der instead",
+        since = "0.10.51"
+    )]
     pub fn new_nid(
         conf: Option<&ConfRef>,
         context: Option<&X509v3Context<'_>>,
@@ -890,6 +975,31 @@ impl X509Extension {
         }
     }
 
+    /// Constructs a new X509 extension value from its OID, whether it's
+    /// critical, and its DER contents.
+    ///
+    /// The extent structure of the DER value will vary based on the
+    /// extension type, and can generally be found in the RFC defining the
+    /// extension.
+    ///
+    /// For common extension types, there are Rust APIs provided in
+    /// `openssl::x509::extensions` which are more ergonomic.
+    pub fn new_from_der(
+        oid: &Asn1ObjectRef,
+        critical: bool,
+        der_contents: &Asn1OctetStringRef,
+    ) -> Result<X509Extension, ErrorStack> {
+        unsafe {
+            cvt_p(ffi::X509_EXTENSION_create_by_OBJ(
+                ptr::null_mut(),
+                oid.as_ptr(),
+                critical as _,
+                der_contents.as_ptr(),
+            ))
+            .map(X509Extension)
+        }
+    }
+
     pub(crate) unsafe fn new_internal(
         nid: Nid,
         critical: bool,
@@ -905,6 +1015,10 @@ impl X509Extension {
     ///
     /// This method modifies global state without locking and therefore is not thread safe
     #[corresponds(X509V3_EXT_add_alias)]
+    #[deprecated(
+        note = "Use x509::extension types or new_from_der and then this is not necessary",
+        since = "0.10.51"
+    )]
     pub unsafe fn add_alias(to: Nid, from: Nid) -> Result<(), ErrorStack> {
         ffi::init();
         cvt(ffi::X509V3_EXT_add_alias(to.as_raw(), from.as_raw())).map(|_| ())
@@ -955,13 +1069,13 @@ impl X509NameBuilder {
     pub fn append_entry_by_text(&mut self, field: &str, value: &str) -> Result<(), ErrorStack> {
         unsafe {
             let field = CString::new(field).unwrap();
-            assert!(value.len() <= c_int::max_value() as usize);
+            assert!(value.len() <= crate::SLenType::max_value() as usize);
             cvt(ffi::X509_NAME_add_entry_by_txt(
                 self.0.as_ptr(),
                 field.as_ptr() as *mut _,
                 ffi::MBSTRING_UTF8,
                 value.as_ptr(),
-                value.len() as c_int,
+                value.len() as crate::SLenType,
                 -1,
                 0,
             ))
@@ -982,13 +1096,13 @@ impl X509NameBuilder {
     ) -> Result<(), ErrorStack> {
         unsafe {
             let field = CString::new(field).unwrap();
-            assert!(value.len() <= c_int::max_value() as usize);
+            assert!(value.len() <= crate::SLenType::max_value() as usize);
             cvt(ffi::X509_NAME_add_entry_by_txt(
                 self.0.as_ptr(),
                 field.as_ptr() as *mut _,
                 ty.as_raw(),
                 value.as_ptr(),
-                value.len() as c_int,
+                value.len() as crate::SLenType,
                 -1,
                 0,
             ))
@@ -1003,13 +1117,13 @@ impl X509NameBuilder {
     /// [`X509_NAME_add_entry_by_NID`]: https://www.openssl.org/docs/manmaster/crypto/X509_NAME_add_entry_by_NID.html
     pub fn append_entry_by_nid(&mut self, field: Nid, value: &str) -> Result<(), ErrorStack> {
         unsafe {
-            assert!(value.len() <= c_int::max_value() as usize);
+            assert!(value.len() <= crate::SLenType::max_value() as usize);
             cvt(ffi::X509_NAME_add_entry_by_NID(
                 self.0.as_ptr(),
                 field.as_raw(),
                 ffi::MBSTRING_UTF8,
                 value.as_ptr() as *mut _,
-                value.len() as c_int,
+                value.len() as crate::SLenType,
                 -1,
                 0,
             ))
@@ -1029,13 +1143,13 @@ impl X509NameBuilder {
         ty: Asn1Type,
     ) -> Result<(), ErrorStack> {
         unsafe {
-            assert!(value.len() <= c_int::max_value() as usize);
+            assert!(value.len() <= crate::SLenType::max_value() as usize);
             cvt(ffi::X509_NAME_add_entry_by_NID(
                 self.0.as_ptr(),
                 field.as_raw(),
                 ty.as_raw(),
                 value.as_ptr() as *mut _,
-                value.len() as c_int,
+                value.len() as crate::SLenType,
                 -1,
                 0,
             ))
@@ -1428,6 +1542,7 @@ impl X509ReqRef {
     /// This corresponds to [`X509_REQ_get_version`]
     ///
     /// [`X509_REQ_get_version`]: https://www.openssl.org/docs/manmaster/crypto/X509_REQ_get_version.html
+    #[allow(clippy::unnecessary_cast)]
     pub fn version(&self) -> i32 {
         unsafe { X509_REQ_get_version(self.as_ptr()) as i32 }
     }
@@ -1481,13 +1596,41 @@ impl X509ReqRef {
     }
 }
 
+/// The reason that a certificate was revoked.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct CrlReason(c_int);
+
+#[allow(missing_docs)] // no need to document the constants
+impl CrlReason {
+    pub const UNSPECIFIED: CrlReason = CrlReason(ffi::CRL_REASON_UNSPECIFIED);
+    pub const KEY_COMPROMISE: CrlReason = CrlReason(ffi::CRL_REASON_KEY_COMPROMISE);
+    pub const CA_COMPROMISE: CrlReason = CrlReason(ffi::CRL_REASON_CA_COMPROMISE);
+    pub const AFFILIATION_CHANGED: CrlReason = CrlReason(ffi::CRL_REASON_AFFILIATION_CHANGED);
+    pub const SUPERSEDED: CrlReason = CrlReason(ffi::CRL_REASON_SUPERSEDED);
+    pub const CESSATION_OF_OPERATION: CrlReason = CrlReason(ffi::CRL_REASON_CESSATION_OF_OPERATION);
+    pub const CERTIFICATE_HOLD: CrlReason = CrlReason(ffi::CRL_REASON_CERTIFICATE_HOLD);
+    pub const REMOVE_FROM_CRL: CrlReason = CrlReason(ffi::CRL_REASON_REMOVE_FROM_CRL);
+    pub const PRIVILEGE_WITHDRAWN: CrlReason = CrlReason(ffi::CRL_REASON_PRIVILEGE_WITHDRAWN);
+    pub const AA_COMPROMISE: CrlReason = CrlReason(ffi::CRL_REASON_AA_COMPROMISE);
+
+    /// Constructs an `CrlReason` from a raw OpenSSL value.
+    pub const fn from_raw(value: c_int) -> Self {
+        CrlReason(value)
+    }
+
+    /// Returns the raw OpenSSL value represented by this type.
+    pub const fn as_raw(&self) -> c_int {
+        self.0
+    }
+}
+
 foreign_type_and_impl_send_sync! {
     type CType = ffi::X509_REVOKED;
     fn drop = ffi::X509_REVOKED_free;
 
-    /// An `X509` certificate request.
+    /// An `X509` certificate revocation status.
     pub struct X509Revoked;
-    /// Reference to `X509Crl`.
+    /// Reference to `X509Revoked`.
     pub struct X509RevokedRef;
 }
 
@@ -1513,6 +1656,13 @@ impl X509RevokedRef {
         ffi::i2d_X509_REVOKED
     }
 
+    /// Copies the entry to a new `X509Revoked`.
+    #[corresponds(X509_NAME_dup)]
+    #[cfg(any(boringssl, ossl110, libressl270))]
+    pub fn to_owned(&self) -> Result<X509Revoked, ErrorStack> {
+        unsafe { cvt_p(ffi::X509_REVOKED_dup(self.as_ptr())).map(|n| X509Revoked::from_ptr(n)) }
+    }
+
     /// Get the date that the certificate was revoked
     #[corresponds(X509_REVOKED_get0_revocationDate)]
     pub fn revocation_date(&self) -> &Asn1TimeRef {
@@ -1532,13 +1682,67 @@ impl X509RevokedRef {
             Asn1IntegerRef::from_ptr(r as *mut _)
         }
     }
+
+    /// Get the criticality and value of an extension.
+    ///
+    /// This returns None if the extension is not present or occurs multiple times.
+    #[corresponds(X509_REVOKED_get_ext_d2i)]
+    pub fn extension<T: ExtensionType>(&self) -> Result<Option<(bool, T::Output)>, ErrorStack> {
+        let mut critical = -1;
+        let out = unsafe {
+            // SAFETY: self.as_ptr() is a valid pointer to an X509_REVOKED.
+            let ext = ffi::X509_REVOKED_get_ext_d2i(
+                self.as_ptr(),
+                T::NID.as_raw(),
+                &mut critical as *mut _,
+                ptr::null_mut(),
+            );
+            // SAFETY: Extensions's contract promises that the type returned by
+            // OpenSSL here is T::Output.
+            T::Output::from_ptr_opt(ext as *mut _)
+        };
+        match (critical, out) {
+            (0, Some(out)) => Ok(Some((false, out))),
+            (1, Some(out)) => Ok(Some((true, out))),
+            // -1 means the extension wasn't found, -2 means multiple were found.
+            (-1 | -2, _) => Ok(None),
+            // A critical value of 0 or 1 suggests success, but a null pointer
+            // was returned so something went wrong.
+            (0 | 1, None) => Err(ErrorStack::get()),
+            (c_int::MIN..=-2 | 2.., _) => panic!("OpenSSL should only return -2, -1, 0, or 1 for an extension's criticality but it returned {}", critical),
+        }
+    }
+}
+
+/// The CRL entry extension identifying the reason for revocation see [`CrlReason`],
+/// this is as defined in RFC 5280 Section 5.3.1.
+pub enum ReasonCode {}
+
+// SAFETY: CertificateIssuer is defined to be a stack of GeneralName in the RFC
+// and in OpenSSL.
+unsafe impl ExtensionType for ReasonCode {
+    const NID: Nid = Nid::from_raw(ffi::NID_crl_reason);
+
+    type Output = Asn1Enumerated;
+}
+
+/// The CRL entry extension identifying the issuer of a certificate used in
+/// indirect CRLs, as defined in RFC 5280 Section 5.3.3.
+pub enum CertificateIssuer {}
+
+// SAFETY: CertificateIssuer is defined to be a stack of GeneralName in the RFC
+// and in OpenSSL.
+unsafe impl ExtensionType for CertificateIssuer {
+    const NID: Nid = Nid::from_raw(ffi::NID_certificate_issuer);
+
+    type Output = Stack<GeneralName>;
 }
 
 foreign_type_and_impl_send_sync! {
     type CType = ffi::X509_CRL;
     fn drop = ffi::X509_CRL_free;
 
-    /// An `X509` certificate request.
+    /// An `X509` certificate revocation list.
     pub struct X509Crl;
     /// Reference to `X509Crl`.
     pub struct X509CrlRef;
@@ -1872,6 +2076,22 @@ impl GeneralNameRef {
         self.ia5_string(ffi::GEN_EMAIL)
     }
 
+    /// Returns the contents of this `GeneralName` if it is a `directoryName`.
+    pub fn directory_name(&self) -> Option<&X509NameRef> {
+        unsafe {
+            if (*self.as_ptr()).type_ != ffi::GEN_DIRNAME {
+                return None;
+            }
+
+            #[cfg(boringssl)]
+            let d = (*self.as_ptr()).d.ptr;
+            #[cfg(not(boringssl))]
+            let d = (*self.as_ptr()).d;
+
+            Some(X509NameRef::from_const_ptr(d as *const _))
+        }
+    }
+
     /// Returns the contents of this `GeneralName` if it is a `dNSName`.
     pub fn dnsname(&self) -> Option<&str> {
         self.ia5_string(ffi::GEN_DNS)
@@ -1925,6 +2145,49 @@ impl fmt::Debug for GeneralNameRef {
 
 impl Stackable for GeneralName {
     type StackType = ffi::stack_st_GENERAL_NAME;
+}
+
+foreign_type_and_impl_send_sync! {
+    type CType = ffi::DIST_POINT;
+    fn drop = ffi::DIST_POINT_free;
+
+    /// A `X509` distribution point.
+    pub struct DistPoint;
+    /// Reference to `DistPoint`.
+    pub struct DistPointRef;
+}
+
+impl DistPointRef {
+    /// Returns the name of this distribution point if it exists
+    pub fn distpoint(&self) -> Option<&DistPointNameRef> {
+        unsafe { DistPointNameRef::from_const_ptr_opt((*self.as_ptr()).distpoint) }
+    }
+}
+
+foreign_type_and_impl_send_sync! {
+    type CType = ffi::DIST_POINT_NAME;
+    fn drop = ffi::DIST_POINT_NAME_free;
+
+    /// A `X509` distribution point.
+    pub struct DistPointName;
+    /// Reference to `DistPointName`.
+    pub struct DistPointNameRef;
+}
+
+impl DistPointNameRef {
+    /// Returns the contents of this DistPointName if it is a fullname.
+    pub fn fullname(&self) -> Option<&StackRef<GeneralName>> {
+        unsafe {
+            if (*self.as_ptr()).type_ != 0 {
+                return None;
+            }
+            StackRef::from_const_ptr_opt((*self.as_ptr()).name.fullname)
+        }
+    }
+}
+
+impl Stackable for DistPoint {
+    type StackType = ffi::stack_st_DIST_POINT;
 }
 
 foreign_type_and_impl_send_sync! {

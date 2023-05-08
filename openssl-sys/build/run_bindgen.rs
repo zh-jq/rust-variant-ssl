@@ -12,6 +12,7 @@ const INCLUDES: &str = "
 #include <openssl/aes.h>
 #include <openssl/asn1.h>
 #include <openssl/bio.h>
+#include <openssl/cmac.h>
 #include <openssl/conf.h>
 #include <openssl/crypto.h>
 #include <openssl/dh.h>
@@ -115,7 +116,6 @@ pub fn run_boringssl(include_dirs: &[PathBuf]) {
         .ctypes_prefix("::libc")
         .derive_default(false)
         .enable_function_attribute_detection()
-        .size_t_is_usize(true)
         .default_macro_constant_type(MacroTypeVariation::Signed)
         .rustified_enum("point_conversion_form_t")
         .allowlist_file(".*/openssl/[^/]+\\.h")
@@ -171,7 +171,6 @@ pub fn run_boringssl(include_dirs: &[PathBuf]) {
         .arg("--ctypes-prefix=::libc")
         .arg("--no-derive-default")
         .arg("--enable-function-attribute-detection")
-        .arg("--size_t-is-usize")
         .arg("--default-macro-constant-type=signed")
         .arg("--rustified-enum=point_conversion_form_t")
         .arg("--allowlist-file=.*/openssl/[^/]+\\.h")
