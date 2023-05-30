@@ -6,6 +6,11 @@ pub enum CONF_METHOD {}
 extern "C" {
     pub fn GENERAL_NAME_new() -> *mut GENERAL_NAME;
     pub fn GENERAL_NAME_free(name: *mut GENERAL_NAME);
+    pub fn GENERAL_NAME_set0_othername(
+        gen: *mut GENERAL_NAME,
+        oid: *mut ASN1_OBJECT,
+        value: *mut ASN1_TYPE,
+    ) -> c_int;
 }
 
 #[repr(C)]
@@ -96,6 +101,8 @@ extern "C" {
         indent: c_int,
     ) -> c_int;
 
+    #[cfg(ossl110)]
+    pub fn X509_get_pathlen(x: *mut X509) -> c_long;
     #[cfg(ossl110)]
     pub fn X509_get_extension_flags(x: *mut X509) -> u32;
     #[cfg(ossl110)]
