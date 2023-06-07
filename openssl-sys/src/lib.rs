@@ -55,7 +55,7 @@ mod openssl {
     pub use self::evp::*;
     #[cfg(not(feature = "bindgen"))]
     pub use self::handwritten::*;
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     pub use self::ntls::*;
     pub use self::obj_mac::*;
     pub use self::ocsp::*;
@@ -87,7 +87,7 @@ mod openssl {
     mod evp;
     #[cfg(not(feature = "bindgen"))]
     mod handwritten;
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     mod ntls;
     mod obj_mac;
     mod ocsp;

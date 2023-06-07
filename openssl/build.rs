@@ -70,7 +70,7 @@ fn main() {
     }
 
     if env::var("CARGO_FEATURE_UNSTABLE_TONGSUO").is_ok() {
-        println!("cargo:rustc-cfg=babassl");
+        println!("cargo:rustc-cfg=tongsuo");
     }
 
     if let Ok(vars) = env::var("DEP_OPENSSL_CONF") {

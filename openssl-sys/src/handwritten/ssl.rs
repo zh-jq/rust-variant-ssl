@@ -547,7 +547,7 @@ extern "C" {
     pub fn SSL_SESSION_free(s: *mut SSL_SESSION);
 }
 cfg_if! {
-    if #[cfg(babassl)] {
+    if #[cfg(tongsuo)] {
         extern "C" {
             pub fn SSL_CTX_use_enc_PrivateKey(ctx: *mut SSL_CTX, pkey: *mut EVP_PKEY) -> c_int;
             pub fn SSL_CTX_use_sign_PrivateKey(ctx: *mut SSL_CTX, pkey: *mut EVP_PKEY) -> c_int;

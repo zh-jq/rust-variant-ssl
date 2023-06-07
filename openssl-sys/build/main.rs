@@ -214,7 +214,7 @@ See rust-openssl documentation for more information:
     let mut openssl_version = None;
     let mut libressl_version = None;
     let mut is_boringssl = false;
-    let mut is_babassl = false;
+    let mut is_tongsuo = false;
     for line in expanded.lines() {
         let line = line.trim();
 
@@ -222,7 +222,7 @@ See rust-openssl documentation for more information:
         let new_openssl_prefix = "RUST_VERSION_NEW_OPENSSL_";
         let libressl_prefix = "RUST_VERSION_LIBRESSL_";
         let boringsl_prefix = "RUST_OPENSSL_IS_BORINGSSL";
-        let babassl_prefix = "RUST_OPENSSL_IS_BABASSL";
+        let tongsuo_prefix = "RUST_OPENSSL_IS_TONGSUO";
         let conf_prefix = "RUST_CONF_";
         if line.starts_with(openssl_prefix) {
             let version = &line[openssl_prefix.len()..];
@@ -237,8 +237,8 @@ See rust-openssl documentation for more information:
             enabled.push(&line[conf_prefix.len()..]);
         } else if line.starts_with(boringsl_prefix) {
             is_boringssl = true;
-        } else if line.starts_with(babassl_prefix) {
-            is_babassl = true;
+        } else if line.starts_with(tongsuo_prefix) {
+            is_tongsuo = true;
         }
     }
 
@@ -260,8 +260,8 @@ See rust-openssl documentation for more information:
     for cfg in cfgs::get(openssl_version, libressl_version) {
         println!("cargo:rustc-cfg={}", cfg);
     }
-    if is_babassl {
-        println!("cargo:rustc-cfg=babassl");
+    if is_tongsuo {
+        println!("cargo:rustc-cfg=tongsuo");
     }
 
     if let Some(libressl_version) = libressl_version {

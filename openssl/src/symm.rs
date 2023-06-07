@@ -300,22 +300,22 @@ impl Cipher {
         unsafe { Cipher(ffi::EVP_chacha20_poly1305()) }
     }
 
-    #[cfg(not(any(boringssl, osslconf = "OPENSSL_NO_SEED")))]
+    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_SEED")))]
     pub fn seed_cbc() -> Cipher {
         unsafe { Cipher(ffi::EVP_seed_cbc()) }
     }
 
-    #[cfg(not(any(boringssl, osslconf = "OPENSSL_NO_SEED")))]
+    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_SEED")))]
     pub fn seed_cfb128() -> Cipher {
         unsafe { Cipher(ffi::EVP_seed_cfb128()) }
     }
 
-    #[cfg(not(any(boringssl, osslconf = "OPENSSL_NO_SEED")))]
+    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_SEED")))]
     pub fn seed_ecb() -> Cipher {
         unsafe { Cipher(ffi::EVP_seed_ecb()) }
     }
 
-    #[cfg(not(any(boringssl, osslconf = "OPENSSL_NO_SEED")))]
+    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_SEED")))]
     pub fn seed_ofb() -> Cipher {
         unsafe { Cipher(ffi::EVP_seed_ofb()) }
     }

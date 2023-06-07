@@ -359,7 +359,7 @@ extern "C" {
     pub fn X509_REQ_get_extensions(req: *mut X509_REQ) -> *mut stack_st_X509_EXTENSION;
 }
 cfg_if! {
-    if #[cfg(babassl)] {
+    if #[cfg(tongsuo)] {
         extern "C" {
             pub fn X509_set0_sm2_id(x: *mut X509, sm2_id: *mut ASN1_OCTET_STRING);
             pub fn X509_get0_sm2_id(x: *mut X509) -> *mut ASN1_OCTET_STRING;

@@ -357,13 +357,13 @@ impl SslMethod {
         unsafe { SslMethod(TLS_server_method()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(NTLS_client_method)]
     pub fn ntls_client() -> SslMethod {
         unsafe { SslMethod(ffi::NTLS_client_method()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(NTLS_server_method)]
     pub fn ntls_server() -> SslMethod {
         unsafe { SslMethod(ffi::NTLS_server_method()) }
@@ -657,7 +657,7 @@ impl SslVersion {
     #[cfg(any(ossl111, libressl340))]
     pub const TLS1_3: SslVersion = SslVersion(ffi::TLS1_3_VERSION);
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     pub const NTLS1_1: SslVersion = SslVersion(ffi::NTLS1_1_VERSION);
 
     /// DTLSv1.0
@@ -746,25 +746,25 @@ impl SslContextBuilder {
         self.0.as_ptr()
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_enable_ntls)]
     pub fn enable_ntls(&mut self) {
         unsafe { ffi::SSL_CTX_enable_ntls(self.as_ptr()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_disable_ntls)]
     pub fn disable_ntls(&mut self) {
         unsafe { ffi::SSL_CTX_disable_ntls(self.as_ptr()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_enable_sm_tls13_strict)]
     pub fn enable_sm_tls13_strict(&mut self) {
         unsafe { ffi::SSL_CTX_enable_sm_tls13_strict(self.as_ptr()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_disable_sm_tls13_strict)]
     pub fn disable_sm_tls13_strict(&mut self) {
         unsafe { ffi::SSL_CTX_disable_sm_tls13_strict(self.as_ptr()) }
@@ -1064,7 +1064,7 @@ impl SslContextBuilder {
         }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_enc_certificate_file)]
     pub fn set_enc_certificate_file<P: AsRef<Path>>(
         &mut self,
@@ -1082,7 +1082,7 @@ impl SslContextBuilder {
         }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_enc_certificate)]
     pub fn set_enc_certificate(&mut self, cert: &X509Ref) -> Result<(), ErrorStack> {
         unsafe {
@@ -1094,7 +1094,7 @@ impl SslContextBuilder {
         }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_sign_certificate_file)]
     pub fn set_sign_certificate_file<P: AsRef<Path>>(
         &mut self,
@@ -1112,7 +1112,7 @@ impl SslContextBuilder {
         }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_sign_certificate)]
     pub fn set_sign_certificate(&mut self, cert: &X509Ref) -> Result<(), ErrorStack> {
         unsafe {
@@ -1151,7 +1151,7 @@ impl SslContextBuilder {
         unsafe { cvt(ffi::SSL_CTX_use_PrivateKey(self.as_ptr(), key.as_ptr())).map(|_| ()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_enc_PrivateKey_file)]
     pub fn set_enc_private_key_file<P: AsRef<Path>>(
         &mut self,
@@ -1169,7 +1169,7 @@ impl SslContextBuilder {
         }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_enc_PrivateKey)]
     pub fn set_enc_private_key<T>(&mut self, key: &PKeyRef<T>) -> Result<(), ErrorStack>
     where
@@ -1178,7 +1178,7 @@ impl SslContextBuilder {
         unsafe { cvt(ffi::SSL_CTX_use_enc_PrivateKey(self.as_ptr(), key.as_ptr())).map(|_| ()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_sign_PrivateKey_file)]
     pub fn set_sign_private_key_file<P: AsRef<Path>>(
         &mut self,
@@ -1196,7 +1196,7 @@ impl SslContextBuilder {
         }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_CTX_use_sign_PrivateKey)]
     pub fn set_sign_private_key<T>(&mut self, key: &PKeyRef<T>) -> Result<(), ErrorStack>
     where
@@ -2504,31 +2504,31 @@ impl SslRef {
         unsafe { ffi::SSL_set_accept_state(self.as_ptr()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_is_ntls)]
     pub fn is_ntls(&mut self) -> bool {
         unsafe { ffi::SSL_is_ntls(self.as_ptr()) != 0 }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_enable_ntls)]
     pub fn enable_ntls(&mut self) {
         unsafe { ffi::SSL_enable_ntls(self.as_ptr()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_disable_ntls)]
     pub fn disable_ntls(&mut self) {
         unsafe { ffi::SSL_disable_ntls(self.as_ptr()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_enable_sm_tls13_strict)]
     pub fn enable_sm_tls13_strict(&mut self) {
         unsafe { ffi::SSL_enable_sm_tls13_strict(self.as_ptr()) }
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_disable_sm_tls13_strict)]
     pub fn disable_sm_tls13_strict(&mut self) {
         unsafe { ffi::SSL_disable_sm_tls13_strict(self.as_ptr()) }
@@ -3426,7 +3426,7 @@ impl SslRef {
         Ok(())
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_use_enc_Private_Key_file)]
     pub fn set_enc_private_key_file<P: AsRef<Path>>(
         &mut self,
@@ -3445,7 +3445,7 @@ impl SslRef {
         Ok(())
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_use_enc_PrivateKey)]
     pub fn set_enc_private_key(&mut self, pkey: &PKeyRef<Private>) -> Result<(), ErrorStack> {
         unsafe {
@@ -3454,7 +3454,7 @@ impl SslRef {
         Ok(())
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_use_sign_Private_Key_file)]
     pub fn set_sign_private_key_file<P: AsRef<Path>>(
         &mut self,
@@ -3473,7 +3473,7 @@ impl SslRef {
         Ok(())
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_use_sign_PrivateKey)]
     pub fn set_sign_private_key(&mut self, pkey: &PKeyRef<Private>) -> Result<(), ErrorStack> {
         unsafe {
@@ -3491,7 +3491,7 @@ impl SslRef {
         Ok(())
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_use_enc_certificate)]
     pub fn set_enc_certificate(&mut self, cert: &X509Ref) -> Result<(), ErrorStack> {
         unsafe {
@@ -3500,7 +3500,7 @@ impl SslRef {
         Ok(())
     }
 
-    #[cfg(babassl)]
+    #[cfg(tongsuo)]
     #[corresponds(SSL_use_sign_certificate)]
     pub fn set_sign_certificate(&mut self, cert: &X509Ref) -> Result<(), ErrorStack> {
         unsafe {

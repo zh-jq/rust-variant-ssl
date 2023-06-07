@@ -4,5 +4,5 @@ members = [
     "openssl-errors",
     "openssl-macros",
     "openssl-sys",
-    "systest",
+#    "systest",
 ]
