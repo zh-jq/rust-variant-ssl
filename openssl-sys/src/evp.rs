@@ -10,6 +10,8 @@ pub const EVP_PKEY_RSA: c_int = NID_rsaEncryption;
 pub const EVP_PKEY_DSA: c_int = NID_dsa;
 pub const EVP_PKEY_DH: c_int = NID_dhKeyAgreement;
 pub const EVP_PKEY_EC: c_int = NID_X9_62_id_ecPublicKey;
+#[cfg(ossl111)]
+pub const EVP_PKEY_SM2: c_int = NID_sm2;
 #[cfg(any(ossl111, libressl370))]
 pub const EVP_PKEY_X25519: c_int = NID_X25519;
 #[cfg(any(ossl111, libressl370))]
@@ -284,4 +286,20 @@ pub unsafe fn EVP_PKEY_CTX_add1_hkdf_info(
         infolen,
         info as *mut c_void,
     )
+}
+
+pub unsafe fn EVP_PKEY_assign_RSA(pkey: *mut EVP_PKEY, rsa: *mut RSA) -> c_int {
+    EVP_PKEY_assign(pkey, EVP_PKEY_RSA, rsa as *mut c_void)
+}
+
+pub unsafe fn EVP_PKEY_assign_DSA(pkey: *mut EVP_PKEY, dsa: *mut DSA) -> c_int {
+    EVP_PKEY_assign(pkey, EVP_PKEY_DSA, dsa as *mut c_void)
+}
+
+pub unsafe fn EVP_PKEY_assign_DH(pkey: *mut EVP_PKEY, dh: *mut DH) -> c_int {
+    EVP_PKEY_assign(pkey, EVP_PKEY_DH, dh as *mut c_void)
+}
+
+pub unsafe fn EVP_PKEY_assign_EC_KEY(pkey: *mut EVP_PKEY, ec_key: *mut EC_KEY) -> c_int {
+    EVP_PKEY_assign(pkey, EVP_PKEY_EC, ec_key as *mut c_void)
 }

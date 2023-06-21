@@ -46,6 +46,8 @@ extern "C" {
 
     pub fn EC_GROUP_set_asn1_flag(key: *mut EC_GROUP, flag: c_int);
 
+    pub fn EC_GROUP_get_asn1_flag(group: *const EC_GROUP) -> c_int;
+
     pub fn EC_GROUP_get_curve_GFp(
         group: *const EC_GROUP,
         p: *mut BIGNUM,
@@ -99,7 +101,7 @@ extern "C" {
 
     pub fn EC_POINT_dup(p: *const EC_POINT, group: *const EC_GROUP) -> *mut EC_POINT;
 
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, boringssl, libressl350))]
     pub fn EC_POINT_get_affine_coordinates(
         group: *const EC_GROUP,
         p: *const EC_POINT,
