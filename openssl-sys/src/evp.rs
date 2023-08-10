@@ -27,6 +27,9 @@ pub const EVP_PKEY_POLY1305: c_int = NID_poly1305;
 #[cfg(ossl110)]
 pub const EVP_PKEY_HKDF: c_int = NID_hkdf;
 
+#[cfg(ossl102)]
+pub const EVP_CIPHER_CTX_FLAG_WRAP_ALLOW: c_int = 0x1;
+
 pub const EVP_CTRL_GCM_SET_IVLEN: c_int = 0x9;
 pub const EVP_CTRL_GCM_GET_TAG: c_int = 0x10;
 pub const EVP_CTRL_GCM_SET_TAG: c_int = 0x11;
@@ -186,6 +189,8 @@ pub const EVP_PKEY_OP_TYPE_SIG: c_int = EVP_PKEY_OP_SIGN
 
 pub const EVP_PKEY_OP_TYPE_CRYPT: c_int = EVP_PKEY_OP_ENCRYPT | EVP_PKEY_OP_DECRYPT;
 
+pub const EVP_PKEY_CTRL_MD: c_int = 1;
+
 pub const EVP_PKEY_CTRL_SET_MAC_KEY: c_int = 6;
 
 pub const EVP_PKEY_CTRL_CIPHER: c_int = 12;
@@ -285,6 +290,18 @@ pub unsafe fn EVP_PKEY_CTX_add1_hkdf_info(
         EVP_PKEY_CTRL_HKDF_INFO,
         infolen,
         info as *mut c_void,
+    )
+}
+
+#[cfg(all(not(ossl300), not(boringssl)))]
+pub unsafe fn EVP_PKEY_CTX_set_signature_md(cxt: *mut EVP_PKEY_CTX, md: *mut EVP_MD) -> c_int {
+    EVP_PKEY_CTX_ctrl(
+        cxt,
+        -1,
+        EVP_PKEY_OP_TYPE_SIG,
+        EVP_PKEY_CTRL_MD,
+        0,
+        md as *mut c_void,
     )
 }
 

@@ -32,6 +32,8 @@ extern "C" {
     pub fn BN_set_negative(bn: *mut BIGNUM, n: c_int);
     #[cfg(any(ossl110, libressl350))]
     pub fn BN_is_negative(b: *const BIGNUM) -> c_int;
+    #[cfg(any(ossl110, libressl350))]
+    pub fn BN_is_odd(b: *const BIGNUM) -> c_int;
 
     pub fn BN_div(
         dv: *mut BIGNUM,
@@ -73,6 +75,13 @@ extern "C" {
         m: *const BIGNUM,
         ctx: *mut BN_CTX,
     ) -> c_int;
+    #[cfg(ossl110)]
+    pub fn BN_mod_sqrt(
+        ret: *mut BIGNUM,
+        a: *const BIGNUM,
+        p: *const BIGNUM,
+        ctx: *mut BN_CTX,
+    ) -> *mut BIGNUM;
 
     pub fn BN_mod_word(r: *const BIGNUM, w: BN_ULONG) -> BN_ULONG;
     pub fn BN_div_word(r: *mut BIGNUM, w: BN_ULONG) -> BN_ULONG;

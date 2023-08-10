@@ -92,8 +92,8 @@ fn find_openssl_dir(target: &str) -> OsString {
     try_pkg_config();
     try_vcpkg();
 
-    // FreeBSD ships with OpenSSL but doesn't include a pkg-config file :(
-    if host == target && target.contains("freebsd") {
+    // FreeBSD and OpenBSD ship with Libre|OpenSSL but don't include a pkg-config file
+    if host == target && (target.contains("freebsd") || target.contains("openbsd")) {
         return OsString::from("/usr");
     }
 
@@ -198,13 +198,11 @@ fn try_pkg_config() {
     let target = env::var("TARGET").unwrap();
     let host = env::var("HOST").unwrap();
 
-    // If we're going to windows-gnu we can use pkg-config, but only so long as
-    // we're coming from a windows host.
-    //
-    // Otherwise if we're going to windows we probably can't use pkg-config.
+    // FIXME we really shouldn't be automatically enabling this
     if target.contains("windows-gnu") && host.contains("windows") {
         env::set_var("PKG_CONFIG_ALLOW_CROSS", "1");
-    } else if target.contains("windows") {
+    } else if target.contains("windows-msvc") {
+        // MSVC targets use vcpkg instead.
         return;
     }
 
@@ -232,8 +230,12 @@ fn try_pkg_config() {
 ///
 /// Note that if this succeeds then the function does not return as vcpkg
 /// should emit all of the cargo metadata that we need.
-#[cfg(target_env = "msvc")]
 fn try_vcpkg() {
+    let target = env::var("TARGET").unwrap();
+    if !target.contains("windows") {
+        return;
+    }
+
     // vcpkg will not emit any metadata if it can not find libraries
     // appropriate for the target triple with the desired linkage.
 
@@ -256,9 +258,6 @@ fn try_vcpkg() {
 
     process::exit(0);
 }
-
-#[cfg(not(target_env = "msvc"))]
-fn try_vcpkg() {}
 
 fn execute_command_and_get_output(cmd: &str, args: &[&str]) -> Option<String> {
     let out = Command::new(cmd).args(args).output();

@@ -70,7 +70,8 @@ use crate::error::ErrorStack;
 use crate::md::MdRef;
 use crate::pkey::{HasPrivate, HasPublic, Id, PKey, PKeyRef, Private};
 use crate::rsa::Padding;
-use crate::{cvt, cvt_n, cvt_p};
+use crate::sign::RsaPssSaltlen;
+use crate::{cvt, cvt_p};
 use foreign_types::{ForeignType, ForeignTypeRef};
 #[cfg(not(boringssl))]
 use libc::c_int;
@@ -164,6 +165,17 @@ where
         Ok(())
     }
 
+    /// Prepares the context for signature recovery using the public key.
+    #[corresponds(EVP_PKEY_verify_recover_init)]
+    #[inline]
+    pub fn verify_recover_init(&mut self) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::EVP_PKEY_verify_recover_init(self.as_ptr()))?;
+        }
+
+        Ok(())
+    }
+
     /// Encrypts data using the public key.
     ///
     /// If `to` is set to `None`, an upper bound on the number of bytes required for the output buffer will be
@@ -209,15 +221,53 @@ where
     #[inline]
     pub fn verify(&mut self, data: &[u8], sig: &[u8]) -> Result<bool, ErrorStack> {
         unsafe {
-            let r = cvt_n(ffi::EVP_PKEY_verify(
+            let r = ffi::EVP_PKEY_verify(
                 self.as_ptr(),
                 sig.as_ptr(),
                 sig.len(),
                 data.as_ptr(),
                 data.len(),
-            ))?;
+            );
+            // `EVP_PKEY_verify` is not terribly consistent about how it,
+            // reports errors. It does not clearly distinguish between 0 and
+            // -1, and may put errors on the stack in both cases. If there's
+            // errors on the stack, we return `Err()`, else we return
+            // `Ok(false)`.
+            if r <= 0 {
+                let errors = ErrorStack::get();
+                if !errors.errors().is_empty() {
+                    return Err(errors);
+                }
+            }
+
             Ok(r == 1)
         }
+    }
+
+    /// Recovers the original data signed by the private key. You almost
+    /// always want `verify` instead.
+    ///
+    /// Returns the number of bytes written to `to`, or the number of bytes
+    /// that would be written, if `to` is `None.
+    #[corresponds(EVP_PKEY_verify_recover)]
+    #[inline]
+    pub fn verify_recover(
+        &mut self,
+        sig: &[u8],
+        to: Option<&mut [u8]>,
+    ) -> Result<usize, ErrorStack> {
+        let mut written = to.as_ref().map_or(0, |b| b.len());
+        unsafe {
+            cvt(ffi::EVP_PKEY_verify_recover(
+                self.as_ptr(),
+                to.map_or(ptr::null_mut(), |b| b.as_mut_ptr()),
+                &mut written,
+                sig.as_ptr(),
+                sig.len(),
+            ))?;
+        }
+
+        Ok(written)
     }
 }
 
@@ -351,6 +401,22 @@ impl<T> PkeyCtxRef<T> {
         Ok(())
     }
 
+    /// Sets which algorithm was used to compute the digest used in a
+    /// signature. With RSA signatures this causes the signature to be wrapped
+    /// in a `DigestInfo` structure. This is almost always what you want with
+    /// RSA signatures.
+    #[corresponds(EVP_PKEY_CTX_set_signature_md)]
+    #[inline]
+    pub fn set_signature_md(&self, md: &MdRef) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::EVP_PKEY_CTX_set_signature_md(
+                self.as_ptr(),
+                md.as_ptr(),
+            ))?;
+        }
+        Ok(())
+    }
+
     /// Returns the RSA padding mode in use.
     ///
     /// This is only useful for RSA keys.
@@ -381,6 +447,21 @@ impl<T> PkeyCtxRef<T> {
         Ok(())
     }
 
+    /// Sets the RSA PSS salt length.
+    ///
+    /// This is only useful for RSA keys.
+    #[corresponds(EVP_PKEY_CTX_set_rsa_pss_saltlen)]
+    #[inline]
+    pub fn set_rsa_pss_saltlen(&mut self, len: RsaPssSaltlen) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::EVP_PKEY_CTX_set_rsa_pss_saltlen(
+                self.as_ptr(),
+                len.as_raw(),
+            ))
+            .map(|_| ())
+        }
+    }
+
     /// Sets the RSA MGF1 algorithm.
     ///
     /// This is only useful for RSA keys.
@@ -401,7 +482,7 @@ impl<T> PkeyCtxRef<T> {
     ///
     /// This is only useful for RSA keys.
     #[corresponds(EVP_PKEY_CTX_set_rsa_oaep_md)]
-    #[cfg(any(ossl102, libressl310))]
+    #[cfg(any(ossl102, libressl310, boringssl))]
     #[inline]
     pub fn set_rsa_oaep_md(&mut self, md: &MdRef) -> Result<(), ErrorStack> {
         unsafe {
@@ -641,11 +722,12 @@ mod test {
     #[cfg(not(boringssl))]
     use crate::cipher::Cipher;
     use crate::ec::{EcGroup, EcKey};
-    #[cfg(any(ossl102, libressl310, boringssl))]
+    use crate::hash::{hash, MessageDigest};
     use crate::md::Md;
     use crate::nid::Nid;
     use crate::pkey::PKey;
     use crate::rsa::Rsa;
+    use crate::sign::Verifier;
 
     #[test]
     fn rsa() {
@@ -671,7 +753,7 @@ mod test {
     }
 
     #[test]
-    #[cfg(any(ossl102, libressl310))]
+    #[cfg(any(ossl102, libressl310, boringssl))]
     fn rsa_oaep() {
         let key = include_bytes!("../test/rsa.pem");
         let rsa = Rsa::private_key_from_pem(key).unwrap();
@@ -696,6 +778,53 @@ mod test {
         ctx.decrypt_to_vec(&ct, &mut out).unwrap();
 
         assert_eq!(pt, out);
+    }
+
+    #[test]
+    fn rsa_sign() {
+        let key = include_bytes!("../test/rsa.pem");
+        let rsa = Rsa::private_key_from_pem(key).unwrap();
+        let pkey = PKey::from_rsa(rsa).unwrap();
+
+        let mut ctx = PkeyCtx::new(&pkey).unwrap();
+        ctx.sign_init().unwrap();
+        ctx.set_rsa_padding(Padding::PKCS1).unwrap();
+        ctx.set_signature_md(Md::sha384()).unwrap();
+
+        let msg = b"hello world";
+        let digest = hash(MessageDigest::sha384(), msg).unwrap();
+        let mut signature = vec![];
+        ctx.sign_to_vec(&digest, &mut signature).unwrap();
+
+        let mut verifier = Verifier::new(MessageDigest::sha384(), &pkey).unwrap();
+        verifier.update(msg).unwrap();
+        assert!(matches!(verifier.verify(&signature), Ok(true)));
+    }
+
+    #[test]
+    fn rsa_sign_pss() {
+        let key = include_bytes!("../test/rsa.pem");
+        let rsa = Rsa::private_key_from_pem(key).unwrap();
+        let pkey = PKey::from_rsa(rsa).unwrap();
+
+        let mut ctx = PkeyCtx::new(&pkey).unwrap();
+        ctx.sign_init().unwrap();
+        ctx.set_rsa_padding(Padding::PKCS1_PSS).unwrap();
+        ctx.set_signature_md(Md::sha384()).unwrap();
+        ctx.set_rsa_pss_saltlen(RsaPssSaltlen::custom(14)).unwrap();
+
+        let msg = b"hello world";
+        let digest = hash(MessageDigest::sha384(), msg).unwrap();
+        let mut signature = vec![];
+        ctx.sign_to_vec(&digest, &mut signature).unwrap();
+
+        let mut verifier = Verifier::new(MessageDigest::sha384(), &pkey).unwrap();
+        verifier.set_rsa_padding(Padding::PKCS1_PSS).unwrap();
+        verifier
+            .set_rsa_pss_saltlen(RsaPssSaltlen::custom(14))
+            .unwrap();
+        verifier.update(msg).unwrap();
+        assert!(matches!(verifier.verify(&signature), Ok(true)));
     }
 
     #[test]
@@ -807,7 +936,67 @@ mod test {
         let bad_data = b"Some Crypto text";
 
         ctx.verify_init().unwrap();
-        let valid = ctx.verify(bad_data, &signature).unwrap();
-        assert!(!valid);
+        let valid = ctx.verify(bad_data, &signature);
+        assert!(matches!(valid, Ok(false) | Err(_)));
+        assert!(ErrorStack::get().errors().is_empty());
+    }
+
+    #[test]
+    fn verify_fail_ec() {
+        let key1 =
+            EcKey::generate(&EcGroup::from_curve_name(Nid::X9_62_PRIME256V1).unwrap()).unwrap();
+        let key1 = PKey::from_ec_key(key1).unwrap();
+
+        let data = b"Some Crypto Text";
+        let mut ctx = PkeyCtx::new(&key1).unwrap();
+        ctx.verify_init().unwrap();
+        assert!(matches!(ctx.verify(data, &[0; 64]), Ok(false) | Err(_)));
+        assert!(ErrorStack::get().errors().is_empty());
+    }
+
+    #[test]
+    fn test_verify_recover() {
+        let key = Rsa::generate(2048).unwrap();
+        let key = PKey::from_rsa(key).unwrap();
+
+        let digest = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26, 27, 28, 29, 30, 31,
+        ];
+
+        let mut ctx = PkeyCtx::new(&key).unwrap();
+        ctx.sign_init().unwrap();
+        ctx.set_rsa_padding(Padding::PKCS1).unwrap();
+        ctx.set_signature_md(Md::sha256()).unwrap();
+        let mut signature = vec![];
+        ctx.sign_to_vec(&digest, &mut signature).unwrap();
+
+        // Attempt recovery of just the digest.
+        let mut ctx = PkeyCtx::new(&key).unwrap();
+        ctx.verify_recover_init().unwrap();
+        ctx.set_rsa_padding(Padding::PKCS1).unwrap();
+        ctx.set_signature_md(Md::sha256()).unwrap();
+        let length = ctx.verify_recover(&signature, None).unwrap();
+        let mut result_buf = vec![0; length];
+        let length = ctx
+            .verify_recover(&signature, Some(&mut result_buf))
+            .unwrap();
+        assert_eq!(length, digest.len());
+        // result_buf contains the digest
+        assert_eq!(result_buf[..length], digest);
+
+        // Attempt recovery of teh entire DigestInfo
+        let mut ctx = PkeyCtx::new(&key).unwrap();
+        ctx.verify_recover_init().unwrap();
+        ctx.set_rsa_padding(Padding::PKCS1).unwrap();
+        let length = ctx.verify_recover(&signature, None).unwrap();
+        let mut result_buf = vec![0; length];
+        let length = ctx
+            .verify_recover(&signature, Some(&mut result_buf))
+            .unwrap();
+        // 32-bytes of SHA256 digest + the ASN.1 DigestInfo structure == 51 bytes
+        assert_eq!(length, 51);
+        // The digest is the end of the DigestInfo structure.
+        assert_eq!(result_buf[length - digest.len()..length], digest);
     }
 }

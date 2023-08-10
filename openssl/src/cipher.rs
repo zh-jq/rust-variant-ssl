@@ -12,6 +12,7 @@ use foreign_types::{ForeignTypeRef, Opaque};
 use openssl_macros::corresponds;
 #[cfg(ossl300)]
 use std::ffi::CString;
+use std::ops::{Deref, DerefMut};
 #[cfg(ossl300)]
 use std::ptr;
 
@@ -41,7 +42,6 @@ cfg_if! {
 cfg_if! {
     if #[cfg(ossl300)] {
         use foreign_types::ForeignType;
-        use std::ops::{Deref, DerefMut};
 
         type Inner = *mut ffi::EVP_CIPHER;
 
@@ -90,6 +90,22 @@ cfg_if! {
         }
     } else {
         enum Inner {}
+
+        impl Deref for Cipher {
+            type Target = CipherRef;
+
+            #[inline]
+            fn deref(&self) -> &Self::Target {
+                match self.0 {}
+            }
+        }
+
+        impl DerefMut for Cipher {
+            #[inline]
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                match self.0 {}
+            }
+        }
     }
 }
 
@@ -170,7 +186,6 @@ impl Cipher {
         unsafe { CipherRef::from_ptr(ffi::EVP_aes_128_cfb8() as *mut _) }
     }
 
-    #[cfg(not(boringssl))]
     pub fn aes_128_gcm() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_aes_128_gcm() as *mut _) }
     }
@@ -189,6 +204,18 @@ impl Cipher {
     #[cfg(ossl110)]
     pub fn aes_128_ocb() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_aes_128_ocb() as *mut _) }
+    }
+
+    /// Requires OpenSSL 1.0.2 or newer.
+    #[cfg(ossl102)]
+    pub fn aes_128_wrap() -> &'static CipherRef {
+        unsafe { CipherRef::from_ptr(ffi::EVP_aes_128_wrap() as *mut _) }
+    }
+
+    /// Requires OpenSSL 1.1.0 or newer.
+    #[cfg(ossl110)]
+    pub fn aes_128_wrap_pad() -> &'static CipherRef {
+        unsafe { CipherRef::from_ptr(ffi::EVP_aes_128_wrap_pad() as *mut _) }
     }
 
     pub fn aes_192_ecb() -> &'static CipherRef {
@@ -236,6 +263,18 @@ impl Cipher {
         unsafe { CipherRef::from_ptr(ffi::EVP_aes_192_ocb() as *mut _) }
     }
 
+    /// Requires OpenSSL 1.0.2 or newer.
+    #[cfg(ossl102)]
+    pub fn aes_192_wrap() -> &'static CipherRef {
+        unsafe { CipherRef::from_ptr(ffi::EVP_aes_192_wrap() as *mut _) }
+    }
+
+    /// Requires OpenSSL 1.1.0 or newer.
+    #[cfg(ossl110)]
+    pub fn aes_192_wrap_pad() -> &'static CipherRef {
+        unsafe { CipherRef::from_ptr(ffi::EVP_aes_192_wrap_pad() as *mut _) }
+    }
+
     pub fn aes_256_ecb() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_aes_256_ecb() as *mut _) }
     }
@@ -279,6 +318,18 @@ impl Cipher {
     #[cfg(ossl110)]
     pub fn aes_256_ocb() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_aes_256_ocb() as *mut _) }
+    }
+
+    /// Requires OpenSSL 1.0.2 or newer.
+    #[cfg(ossl102)]
+    pub fn aes_256_wrap() -> &'static CipherRef {
+        unsafe { CipherRef::from_ptr(ffi::EVP_aes_256_wrap() as *mut _) }
+    }
+
+    /// Requires OpenSSL 1.1.0 or newer.
+    #[cfg(ossl110)]
+    pub fn aes_256_wrap_pad() -> &'static CipherRef {
+        unsafe { CipherRef::from_ptr(ffi::EVP_aes_256_wrap_pad() as *mut _) }
     }
 
     #[cfg(not(osslconf = "OPENSSL_NO_BF"))]
