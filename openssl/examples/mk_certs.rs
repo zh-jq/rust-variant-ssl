@@ -3,17 +3,17 @@
 //! A program that generates ca certs, certs verified by the ca, and public
 //! and private keys.
 
-use tongsuo::asn1::Asn1Time;
-use tongsuo::bn::{BigNum, MsbOption};
-use tongsuo::error::ErrorStack;
-use tongsuo::hash::MessageDigest;
-use tongsuo::pkey::{PKey, PKeyRef, Private};
-use tongsuo::rsa::Rsa;
-use tongsuo::x509::extension::{
+use openssl::asn1::Asn1Time;
+use openssl::bn::{BigNum, MsbOption};
+use openssl::error::ErrorStack;
+use openssl::hash::MessageDigest;
+use openssl::pkey::{PKey, PKeyRef, Private};
+use openssl::rsa::Rsa;
+use openssl::x509::extension::{
     AuthorityKeyIdentifier, BasicConstraints, KeyUsage, SubjectAlternativeName,
     SubjectKeyIdentifier,
 };
-use tongsuo::x509::{X509NameBuilder, X509Ref, X509Req, X509ReqBuilder, X509VerifyResult, X509};
+use openssl::x509::{X509NameBuilder, X509Ref, X509Req, X509ReqBuilder, X509VerifyResult, X509};
 
 /// Make a CA certificate and private key
 fn mk_ca_cert() -> Result<(X509, PKey<Private>), ErrorStack> {
