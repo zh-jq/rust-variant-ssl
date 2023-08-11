@@ -62,7 +62,7 @@ jobs:
       # Remember to also update `--rust-target` in `openssl-sys/build/run_bindgen.rs`
       - uses: sfackler/actions/rustup@master
         with:
-          version: 1.57.0
+          version: 1.70.0
       - run: echo "version=$(rustc --version)" >> $GITHUB_OUTPUT
         id: rust-version
       - uses: actions/cache@v3
@@ -346,7 +346,7 @@ jobs:
               features="--no-default-features"
             fi
             if [[ "${{ matrix.library.name }}" == "openssl"  && "${{ matrix.library.version }}" == "vendored" ]]; then
-              features="--features vendored"
+              features="--no-default-features --features vendored"
             fi
             if [[ "${{ matrix.bindgen }}" == "true" ]]; then
               features="$features --features bindgen"
