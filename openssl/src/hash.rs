@@ -745,7 +745,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(boringssl))]
+    #[cfg(not(any(boringssl, tongsuo)))]
     #[cfg_attr(ossl300, ignore)]
     fn test_ripemd160() {
         #[cfg(ossl300)]

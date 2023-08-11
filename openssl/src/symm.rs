@@ -1152,7 +1152,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(ossl300, ignore)]
-    #[cfg(not(boringssl))]
+    #[cfg(not(any(boringssl, tongsuo)))]
     fn test_bf_cbc() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
@@ -1169,7 +1169,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(ossl300, ignore)]
-    #[cfg(not(boringssl))]
+    #[cfg(not(any(boringssl, tongsuo)))]
     fn test_bf_ecb() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
@@ -1184,7 +1184,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(ossl300, ignore)]
-    #[cfg(not(boringssl))]
+    #[cfg(not(any(boringssl, tongsuo)))]
     fn test_bf_cfb64() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
@@ -1199,7 +1199,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(ossl300, ignore)]
-    #[cfg(not(boringssl))]
+    #[cfg(not(any(boringssl, tongsuo)))]
     fn test_bf_ofb() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
