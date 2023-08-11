@@ -332,23 +332,23 @@ impl Cipher {
         unsafe { CipherRef::from_ptr(ffi::EVP_aes_256_wrap_pad() as *mut _) }
     }
 
-    #[cfg(not(osslconf = "OPENSSL_NO_BF"))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_BF")))]
     pub fn bf_cbc() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_bf_cbc() as *mut _) }
     }
 
-    #[cfg(not(osslconf = "OPENSSL_NO_BF"))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_BF")))]
     pub fn bf_ecb() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_bf_ecb() as *mut _) }
     }
 
-    #[cfg(not(osslconf = "OPENSSL_NO_BF"))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_BF")))]
     #[cfg(not(boringssl))]
     pub fn bf_cfb64() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_bf_cfb64() as *mut _) }
     }
 
-    #[cfg(not(osslconf = "OPENSSL_NO_BF"))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_BF")))]
     #[cfg(not(boringssl))]
     pub fn bf_ofb() -> &'static CipherRef {
         unsafe { CipherRef::from_ptr(ffi::EVP_bf_ofb() as *mut _) }
