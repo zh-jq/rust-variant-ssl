@@ -3,6 +3,8 @@
 Tongsuo bindings for the Rust programming language,
 based on [rust-openssl](https://github.com/sfackler/rust-openssl).
 
+The default feature will use Tongsuo, you can disable **tongsuo** feature to use OpenSSL.
+
 [Documentation](https://docs.rs/openssl).
 
 ## Release Support

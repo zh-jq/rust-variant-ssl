@@ -20,7 +20,7 @@ vendored = ['ffi/vendored']
 tongsuo = ['ffi/tongsuo']
 bindgen = ['ffi/bindgen']
 unstable_boringssl = ["ffi/unstable_boringssl"]
-default = []
+default = ["tongsuo"]
 
 [dependencies]
 bitflags = "1.0"
