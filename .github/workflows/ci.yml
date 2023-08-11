@@ -52,7 +52,7 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo clippy --no-default-features --tests --all-targets
+      - run: cargo clippy --no-default-features --all --tests
 
   min-version:
     name: min-version
