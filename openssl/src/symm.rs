@@ -922,7 +922,7 @@ mod tests {
         }
     }
 
-    #[cfg(not(boringssl))]
+    #[cfg(not(any(boringssl, tongsuo)))]
     fn cipher_test_nopad(ciphertype: super::Cipher, pt: &str, ct: &str, key: &str, iv: &str) {
         let pt = Vec::from_hex(pt).unwrap();
         let ct = Vec::from_hex(ct).unwrap();
