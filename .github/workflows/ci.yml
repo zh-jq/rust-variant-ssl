@@ -109,7 +109,6 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      # - run: cargo run -p systest
       - run: cargo test -p openssl
       - run: cargo test -p openssl-errors
 
@@ -137,7 +136,6 @@ jobs:
       #   with:
       #     path: target
       #     key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo run -p systest
       - run: cargo test -p openssl
       - run: cargo test -p openssl-errors
 
@@ -155,6 +153,8 @@ jobs:
           library:
             - name: boringssl
               version: bcecc7d834fc44ad257b2f23f88e1cf597ab2736
+            - name: tongsuo
+              version: vendored
             - name: openssl
               version: vendored
             - name: openssl
@@ -339,20 +339,13 @@ jobs:
           with:
             path: target
             key: target-${{ matrix.target }}-${{ matrix.bindgen }}-${{ matrix.library.name }}-${{ matrix.library.version }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-        - name: Run systest
-          run: |
-            if [[ "${{ matrix.library.version }}" == "vendored" ]]; then
-              features="--features vendored"
-            fi
-            if [[ "${{ matrix.bindgen }}" == "true" && "${{ matrix.library.name }}" != "boringssl" ]]; then
-              features="$features --features bindgen"
-            fi
-            cargo run --manifest-path=systest/Cargo.toml --target ${{ matrix.target }} $features
-          if: matrix.library.name != 'boringssl'
         - name: Test openssl
           run: |
             if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
               features="--features unstable_boringssl"
+            fi
+            if [[ "${{ matrix.library.name }}" == "tongsuo"; then
+              features="--features tongsuo"
             fi
             if [[ "${{ matrix.library.version }}" == "vendored" ]]; then
               features="--features vendored"
@@ -361,13 +354,3 @@ jobs:
               features="$features --features bindgen"
             fi
             cargo test --manifest-path=openssl/Cargo.toml --target ${{ matrix.target }} $features
-        - name: Test openssl-errors
-          run: |
-            if [[ "${{ matrix.library.version }}" == "vendored" ]]; then
-              features="--features openssl-sys/vendored"
-            fi
-            if [[ "${{ matrix.bindgen }}" == "true" ]]; then
-              features="$features --features openssl-sys/bindgen"
-            fi
-            cargo test --manifest-path=openssl-errors/Cargo.toml --target ${{ matrix.target }} $features
-          if: matrix.library.name != 'boringssl'
