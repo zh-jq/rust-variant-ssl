@@ -109,7 +109,7 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo test -p tongsuo
+      - run: cargo test -p tongsuo --tests
 
   macos-homebrew:
     name: macos-homebrew
@@ -135,7 +135,7 @@ jobs:
       #   with:
       #     path: target
       #     key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo test -p tongsuo
+      - run: cargo test -p tongsuo --tests
 
   linux:
       strategy:
@@ -351,4 +351,4 @@ jobs:
             if [[ "${{ matrix.bindgen }}" == "true" ]]; then
               features="$features --features bindgen"
             fi
-            cargo test --manifest-path=openssl/Cargo.toml --target ${{ matrix.target }} $features
+            cargo test --manifest-path=openssl/Cargo.toml --target ${{ matrix.target }} $features --tests
