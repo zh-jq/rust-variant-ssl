@@ -340,12 +340,12 @@ jobs:
         - name: Test openssl
           run: |
             if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
-              features="--features unstable_boringssl"
+              features="--no-default-features --features unstable_boringssl"
             fi
-            if [[ "${{ matrix.library.name }}" == "tongsuo" ]]; then
-              features="--features tongsuo"
+            if [[ "${{ matrix.library.name }}" == "openssl" ]]; then
+              features="--no-default-feaures"
             fi
-            if [[ "${{ matrix.library.version }}" == "vendored" ]]; then
+            if [[ "${{ matrix.library.name }}" == "openssl"  && "${{ matrix.library.version }}" == "vendored" ]]; then
               features="--features vendored"
             fi
             if [[ "${{ matrix.bindgen }}" == "true" ]]; then
