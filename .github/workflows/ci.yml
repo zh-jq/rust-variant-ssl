@@ -81,7 +81,7 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo check -p openssl
+      - run: cargo check -p tongsuo
 
   windows-vcpkg:
     name: windows-vcpkg
@@ -109,8 +109,7 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo test -p openssl
-      - run: cargo test -p openssl-errors
+      - run: cargo test -p tongsuo
 
   macos-homebrew:
     name: macos-homebrew
@@ -136,8 +135,7 @@ jobs:
       #   with:
       #     path: target
       #     key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo test -p openssl
-      - run: cargo test -p openssl-errors
+      - run: cargo test -p tongsuo
 
   linux:
       strategy:
@@ -344,7 +342,7 @@ jobs:
             if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
               features="--features unstable_boringssl"
             fi
-            if [[ "${{ matrix.library.name }}" == "tongsuo"; then
+            if [[ "${{ matrix.library.name }}" == "tongsuo" ]]; then
               features="--features tongsuo"
             fi
             if [[ "${{ matrix.library.version }}" == "vendored" ]]; then
