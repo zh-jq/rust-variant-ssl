@@ -3,9 +3,9 @@ extern crate bindgen;
 extern crate cc;
 #[cfg(feature = "vendored")]
 extern crate openssl_src;
-#[cfg(feature = "unstable_tongsuo")]
-extern crate tongsuo_src;
 extern crate pkg_config;
+#[cfg(feature = "tongsuo")]
+extern crate tongsuo_src;
 extern crate vcpkg;
 
 use std::collections::HashSet;
@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 mod cfgs;
 
 mod find_normal;
-#[cfg(feature = "unstable_tongsuo")]
+#[cfg(feature = "tongsuo")]
 mod find_tongsuo_vendored;
 #[cfg(feature = "vendored")]
 mod find_vendored;
@@ -57,7 +57,7 @@ fn find_openssl(target: &str) -> (Vec<PathBuf>, PathBuf) {
             return find_vendored::get_openssl(target);
         }
     }
-    #[cfg(feature = "unstable_tongsuo")]
+    #[cfg(feature = "tongsuo")]
     {
         // vendor if the feature is present, unless
         // OPENSSL_NO_VENDOR exists and isn't `0`

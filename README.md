@@ -1,14 +1,13 @@
-# rust-openssl
+# rust-tongsuo
 
-[![crates.io](https://img.shields.io/crates/v/openssl.svg)](https://crates.io/crates/openssl)
-
-OpenSSL bindings for the Rust programming language.
+Tongsuo bindings for the Rust programming language,
+based on [rust-openssl](https://github.com/sfackler/rust-openssl).
 
 [Documentation](https://docs.rs/openssl).
 
 ## Release Support
 
-The current supported release of `openssl` is 0.10 and `openssl-sys` is 0.9.
+The current supported release of `tongsuo` is 0.10 and `tongsuo-sys` is 0.9.
 
 New major versions will be published at most once per year. After a new
 release, the previous major version will be partially supported with bug
