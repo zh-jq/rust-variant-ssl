@@ -52,7 +52,7 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo clippy --no-default-features --all --tests
+      - run: cargo clippy --all --tests
 
   min-version:
     name: min-version
@@ -339,14 +339,14 @@ jobs:
             key: target-${{ matrix.target }}-${{ matrix.bindgen }}-${{ matrix.library.name }}-${{ matrix.library.version }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
         - name: Test openssl
           run: |
-            if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
-              features="--no-default-features --features unstable_boringssl"
-            fi
-            if [[ "${{ matrix.library.name }}" == "openssl" ]]; then
+            if [[ "${{ matrix.library.name }}" != "tongsuo" ]]; then
               features="--no-default-features"
             fi
+            if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
+              features="$features --features unstable_boringssl"
+            fi
             if [[ "${{ matrix.library.name }}" == "openssl"  && "${{ matrix.library.version }}" == "vendored" ]]; then
-              features="--no-default-features --features vendored"
+              features="$features --features vendored"
             fi
             if [[ "${{ matrix.bindgen }}" == "true" ]]; then
               features="$features --features bindgen"

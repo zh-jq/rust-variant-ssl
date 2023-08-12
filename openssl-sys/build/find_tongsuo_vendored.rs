@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use tongsuo_src;
 
 pub fn get_openssl(_target: &str) -> (Vec<PathBuf>, PathBuf) {
     let artifacts = tongsuo_src::Build::new().build();
