@@ -288,6 +288,7 @@ mod test {
     };
 
     #[test]
+    #[cfg(not(tongsuo))]
     fn cms_encrypt_decrypt() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
@@ -429,6 +430,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(not(tongsuo))]
     fn cms_sign_verify_error() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
