@@ -279,8 +279,10 @@ impl CmsContentInfo {
 mod test {
     use super::*;
 
+    #[cfg(not(tongsuo))]
     use crate::pkcs12::Pkcs12;
     use crate::pkey::PKey;
+    #[cfg(not(tongsuo))]
     use crate::stack::Stack;
     use crate::x509::{
         store::{X509Store, X509StoreBuilder},
