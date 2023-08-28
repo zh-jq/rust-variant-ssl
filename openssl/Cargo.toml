@@ -1,6 +1,6 @@
 [package]
 name = "tongsuo"
-version = "0.10.56"
+version = "0.10.57"
 license = "Apache-2.0"
 description = "OpenSSL bindings"
 repository = "https://github.com/zh-jq/rust-tongsuo"
@@ -23,14 +23,14 @@ unstable_boringssl = ["ffi/unstable_boringssl"]
 default = ["tongsuo"]
 
 [dependencies]
-bitflags = "1.0"
+bitflags = "2.2.1"
 cfg-if = "1.0"
 foreign-types = "0.3.1"
 libc = "0.2"
 once_cell = "1.5.2"
 
 openssl-macros = { version = "0.1.0" }
-ffi = { package = "tongsuo-sys", version = "0.9.91", path = "../openssl-sys" }
+ffi = { package = "tongsuo-sys", version = "0.9.92", path = "../openssl-sys" }
 
 [dev-dependencies]
 hex = "0.3"
