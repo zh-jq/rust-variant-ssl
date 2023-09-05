@@ -127,6 +127,16 @@ fn main() {
         println!("cargo:rustc-link-lib={}={}", kind, lib);
     }
 
+    // https://github.com/openssl/openssl/pull/15086
+    if version == Version::Openssl3xx
+        && kind == "static"
+        && (env::var("CARGO_CFG_TARGET_OS").unwrap() == "linux"
+            || env::var("CARGO_CFG_TARGET_OS").unwrap() == "android")
+        && env::var("CARGO_CFG_TARGET_POINTER_WIDTH").unwrap() == "32"
+    {
+        println!("cargo:rustc-link-lib=dylib=atomic");
+    }
+
     if kind == "static" && target.contains("windows") {
         println!("cargo:rustc-link-lib=dylib=gdi32");
         println!("cargo:rustc-link-lib=dylib=user32");
@@ -292,6 +302,7 @@ See rust-openssl documentation for more information:
             (3, 7, 1) => ('3', '7', '1'),
             (3, 7, _) => ('3', '7', 'x'),
             (3, 8, 0) => ('3', '8', '0'),
+            (3, 8, 1) => ('3', '8', '1'),
             _ => version_error(),
         };
 
@@ -333,8 +344,8 @@ fn version_error() -> ! {
     panic!(
         "
 
-This crate is only compatible with OpenSSL (version 1.0.1 through 1.1.1, or 3.0.0), or LibreSSL 2.5
-through 3.8.0, but a different version of OpenSSL was found. The build is now aborting
+This crate is only compatible with OpenSSL (version 1.0.1 through 1.1.1, or 3), or LibreSSL 2.5
+through 3.8.1, but a different version of OpenSSL was found. The build is now aborting
 due to this version mismatch.
 
 "
