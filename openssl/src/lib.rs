@@ -124,6 +124,8 @@
 #[doc(inline)]
 pub use ffi::init;
 
+pub use foreign_types;
+
 use libc::c_int;
 
 use crate::error::ErrorStack;
