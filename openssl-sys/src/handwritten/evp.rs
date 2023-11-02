@@ -52,7 +52,7 @@ cfg_if! {
 }
 
 cfg_if! {
-    if #[cfg(ossl110)] {
+    if #[cfg(any(ossl110, libressl382))] {
         extern "C" {
             pub fn EVP_MD_CTX_new() -> *mut EVP_MD_CTX;
             pub fn EVP_MD_CTX_free(ctx: *mut EVP_MD_CTX);
@@ -294,13 +294,13 @@ extern "C" {
     pub fn EVP_sha256() -> *const EVP_MD;
     pub fn EVP_sha384() -> *const EVP_MD;
     pub fn EVP_sha512() -> *const EVP_MD;
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, libressl380))]
     pub fn EVP_sha3_224() -> *const EVP_MD;
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, libressl380))]
     pub fn EVP_sha3_256() -> *const EVP_MD;
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, libressl380))]
     pub fn EVP_sha3_384() -> *const EVP_MD;
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, libressl380))]
     pub fn EVP_sha3_512() -> *const EVP_MD;
     #[cfg(ossl111)]
     pub fn EVP_shake128() -> *const EVP_MD;
@@ -398,28 +398,38 @@ extern "C" {
     #[cfg(tongsuo)]
     pub fn EVP_eea3() -> *const EVP_CIPHER;
 
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
     pub fn EVP_camellia_128_cfb128() -> *const EVP_CIPHER;
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
     pub fn EVP_camellia_128_ecb() -> *const EVP_CIPHER;
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    pub fn EVP_camellia_128_cbc() -> *const EVP_CIPHER;
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
     pub fn EVP_camellia_192_cfb128() -> *const EVP_CIPHER;
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
     pub fn EVP_camellia_192_ecb() -> *const EVP_CIPHER;
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    pub fn EVP_camellia_192_cbc() -> *const EVP_CIPHER;
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
     pub fn EVP_camellia_256_cfb128() -> *const EVP_CIPHER;
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
     pub fn EVP_camellia_256_ecb() -> *const EVP_CIPHER;
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAMELLIA")))]
+    pub fn EVP_camellia_256_cbc() -> *const EVP_CIPHER;
 
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAST")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAST")))]
     pub fn EVP_cast5_cfb64() -> *const EVP_CIPHER;
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_CAST")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAST")))]
     pub fn EVP_cast5_ecb() -> *const EVP_CIPHER;
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_CAST")))]
+    pub fn EVP_cast5_cbc() -> *const EVP_CIPHER;
 
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_IDEA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_IDEA")))]
     pub fn EVP_idea_cfb64() -> *const EVP_CIPHER;
-    #[cfg(not(any(boringssl, tongsuo, osslconf = "OPENSSL_NO_IDEA")))]
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_IDEA")))]
     pub fn EVP_idea_ecb() -> *const EVP_CIPHER;
+    #[cfg(not(any(tongsuo, osslconf = "OPENSSL_NO_IDEA")))]
+    pub fn EVP_idea_cbc() -> *const EVP_CIPHER;
 
     #[cfg(not(ossl110))]
     pub fn OPENSSL_add_all_algorithms_noconf();

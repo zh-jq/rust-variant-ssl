@@ -135,6 +135,8 @@ pub const NID_sha512WithRSAEncryption: c_int = 670;
 pub const NID_sha224WithRSAEncryption: c_int = 671;
 pub const NID_pkcs3: c_int = 27;
 pub const NID_dhKeyAgreement: c_int = 28;
+#[cfg(ossl110)]
+pub const NID_dhpublicnumber: c_int = 920;
 pub const NID_pkcs5: c_int = 187;
 pub const NID_pbeWithMD2AndDES_CBC: c_int = 9;
 pub const NID_pbeWithMD5AndDES_CBC: c_int = 10;
@@ -926,6 +928,8 @@ pub const NID_X25519: c_int = 950;
 pub const NID_X448: c_int = 1035;
 #[cfg(ossl110)]
 pub const NID_hkdf: c_int = 1036;
+#[cfg(libressl360)]
+pub const NID_hkdf: c_int = 1022;
 #[cfg(ossl111)]
 pub const NID_poly1305: c_int = 1061;
 #[cfg(ossl111)]
@@ -974,12 +978,20 @@ pub const NID_sm4_ctr: c_int = 1139;
 pub const NID_sm4_ctr: c_int = 979;
 #[cfg(ossl111)]
 pub const NID_sha3_224: c_int = 1096;
+#[cfg(libressl380)]
+pub const NID_sha3_224: c_int = 1031;
 #[cfg(ossl111)]
 pub const NID_sha3_256: c_int = 1097;
+#[cfg(libressl380)]
+pub const NID_sha3_256: c_int = 1032;
 #[cfg(ossl111)]
 pub const NID_sha3_384: c_int = 1098;
+#[cfg(libressl380)]
+pub const NID_sha3_384: c_int = 1033;
 #[cfg(ossl111)]
 pub const NID_sha3_512: c_int = 1099;
+#[cfg(libressl380)]
+pub const NID_sha3_512: c_int = 1034;
 #[cfg(ossl111)]
 pub const NID_shake128: c_int = 1100;
 #[cfg(ossl111)]
