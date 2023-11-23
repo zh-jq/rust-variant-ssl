@@ -1,6 +1,6 @@
 [package]
 name = "tongsuo-sys"
-version = "0.9.95"
+version = "0.9.96"
 license = "MIT"
 description = "FFI bindings to Tongsuo/OpenSSL"
 repository = "https://github.com/zh-jq/rust-tongsuo"

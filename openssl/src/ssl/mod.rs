@@ -57,6 +57,8 @@
 //!     }
 //! }
 //! ```
+#[cfg(ossl300)]
+use crate::cvt_long;
 use crate::dh::{Dh, DhRef};
 #[cfg(all(ossl101, not(ossl110)))]
 use crate::ec::EcKey;
@@ -68,6 +70,8 @@ use crate::hash::MessageDigest;
 #[cfg(any(ossl110, libressl270))]
 use crate::nid::Nid;
 use crate::pkey::{HasPrivate, PKeyRef, Params, Private};
+#[cfg(ossl300)]
+use crate::pkey::{PKey, Public};
 use crate::srtp::{SrtpProtectionProfile, SrtpProtectionProfileRef};
 use crate::ssl::bio::BioMethod;
 use crate::ssl::callbacks::*;
@@ -1739,16 +1743,34 @@ impl SslContextBuilder {
     ///
     /// This can be used to provide data to callbacks registered with the context. Use the
     /// `SslContext::new_ex_index` method to create an `Index`.
+    // FIXME should return a result
     #[corresponds(SSL_CTX_set_ex_data)]
     pub fn set_ex_data<T>(&mut self, index: Index<SslContext, T>, data: T) {
         self.set_ex_data_inner(index, data);
     }
 
     fn set_ex_data_inner<T>(&mut self, index: Index<SslContext, T>, data: T) -> *mut c_void {
+        match self.ex_data_mut(index) {
+            Some(v) => {
+                *v = data;
+                (v as *mut T).cast()
+            }
+            _ => unsafe {
+                let data = Box::into_raw(Box::new(data)) as *mut c_void;
+                ffi::SSL_CTX_set_ex_data(self.as_ptr(), index.as_raw(), data);
+                data
+            },
+        }
+    }
+
+    fn ex_data_mut<T>(&mut self, index: Index<SslContext, T>) -> Option<&mut T> {
         unsafe {
-            let data = Box::into_raw(Box::new(data)) as *mut c_void;
-            ffi::SSL_CTX_set_ex_data(self.as_ptr(), index.as_raw(), data);
-            data
+            let data = ffi::SSL_CTX_get_ex_data(self.as_ptr(), index.as_raw());
+            if data.is_null() {
+                None
+            } else {
+                Some(&mut *data.cast())
+            }
         }
     }
 
@@ -3174,15 +3196,19 @@ impl SslRef {
     ///
     /// This can be used to provide data to callbacks registered with the context. Use the
     /// `Ssl::new_ex_index` method to create an `Index`.
+    // FIXME should return a result
     #[corresponds(SSL_set_ex_data)]
     pub fn set_ex_data<T>(&mut self, index: Index<Ssl, T>, data: T) {
-        unsafe {
-            let data = Box::new(data);
-            ffi::SSL_set_ex_data(
-                self.as_ptr(),
-                index.as_raw(),
-                Box::into_raw(data) as *mut c_void,
-            );
+        match self.ex_data_mut(index) {
+            Some(v) => *v = data,
+            None => unsafe {
+                let data = Box::new(data);
+                ffi::SSL_set_ex_data(
+                    self.as_ptr(),
+                    index.as_raw(),
+                    Box::into_raw(data) as *mut c_void,
+                );
+            },
         }
     }
 
@@ -3731,6 +3757,38 @@ impl SslRef {
     #[cfg(any(ossl110, libressl360))]
     pub fn security_level(&self) -> u32 {
         unsafe { ffi::SSL_get_security_level(self.as_ptr()) as u32 }
+    }
+
+    /// Get the temporary key provided by the peer that is used during key
+    /// exchange.
+    // We use an owned value because EVP_KEY free need to be called when it is
+    // dropped
+    #[corresponds(SSL_get_peer_tmp_key)]
+    #[cfg(ossl300)]
+    pub fn peer_tmp_key(&self) -> Result<PKey<Public>, ErrorStack> {
+        unsafe {
+            let mut key = ptr::null_mut();
+            match cvt_long(ffi::SSL_get_peer_tmp_key(self.as_ptr(), &mut key)) {
+                Ok(_) => Ok(PKey::<Public>::from_ptr(key)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+
+    /// Returns the temporary key from the local end of the connection that is
+    /// used during key exchange.
+    // We use an owned value because EVP_KEY free need to be called when it is
+    // dropped
+    #[corresponds(SSL_get_tmp_key)]
+    #[cfg(ossl300)]
+    pub fn tmp_key(&self) -> Result<PKey<Private>, ErrorStack> {
+        unsafe {
+            let mut key = ptr::null_mut();
+            match cvt_long(ffi::SSL_get_tmp_key(self.as_ptr(), &mut key)) {
+                Ok(_) => Ok(PKey::<Private>::from_ptr(key)),
+                Err(e) => Err(e),
+            }
+        }
     }
 }
 

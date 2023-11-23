@@ -383,7 +383,7 @@ impl Cipher {
     }
 
     /// Requires OpenSSL 1.1.0 or newer.
-    #[cfg(all(ossl110, not(osslconf = "OPENSSL_NO_CHACHA")))]
+    #[cfg(all(any(ossl110, libressl310), not(osslconf = "OPENSSL_NO_CHACHA")))]
     pub fn chacha20() -> Cipher {
         unsafe { Cipher(ffi::EVP_chacha20()) }
     }
@@ -694,6 +694,27 @@ impl Crypter {
     /// Panics if `output.len() > c_int::max_value()`.
     pub fn update(&mut self, input: &[u8], output: &mut [u8]) -> Result<usize, ErrorStack> {
         self.ctx.cipher_update(input, Some(output))
+    }
+
+    /// Feeds data from `input` through the cipher, writing encrypted/decrypted
+    /// bytes into `output`.
+    ///
+    /// The number of bytes written to `output` is returned. Note that this may
+    /// not be equal to the length of `input`.
+    ///
+    /// # Safety
+    ///
+    /// The caller must provide an `output` buffer large enough to contain
+    /// correct number of bytes. For streaming ciphers the output buffer size
+    /// should be at least as big as the input buffer. For block ciphers the
+    /// size of the output buffer depends on the state of partially updated
+    /// blocks.
+    pub unsafe fn update_unchecked(
+        &mut self,
+        input: &[u8],
+        output: &mut [u8],
+    ) -> Result<usize, ErrorStack> {
+        self.ctx.cipher_update_unchecked(input, Some(output))
     }
 
     /// Finishes the encryption/decryption process, writing any remaining data
@@ -1592,7 +1613,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(ossl110)]
+    #[cfg(any(ossl110, libressl310))]
     fn test_chacha20() {
         let key = "0000000000000000000000000000000000000000000000000000000000000000";
         let iv = "00000000000000000000000000000000";

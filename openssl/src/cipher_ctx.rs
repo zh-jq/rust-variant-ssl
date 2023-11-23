@@ -556,8 +556,11 @@ impl CipherCtxRef {
         output: Option<&mut [u8]>,
     ) -> Result<usize, ErrorStack> {
         if let Some(output) = &output {
-            let block_size = self.block_size();
-            let min_output_size = input.len() + block_size - 1;
+            let mut block_size = self.block_size();
+            if block_size == 1 {
+                block_size = 0;
+            }
+            let min_output_size = input.len() + block_size;
             assert!(
                 output.len() >= min_output_size,
                 "Output buffer size should be at least {} bytes.",
@@ -578,7 +581,9 @@ impl CipherCtxRef {
     /// output size check removed. It can be used when the exact
     /// buffer size control is maintained by the caller.
     ///
-    /// SAFETY: The caller is expected to provide `output` buffer
+    /// # Safety
+    ///
+    /// The caller is expected to provide `output` buffer
     /// large enough to contain correct number of bytes. For streaming
     /// ciphers the output buffer size should be at least as big as
     /// the input buffer. For block ciphers the size of the output
@@ -690,7 +695,9 @@ impl CipherCtxRef {
     /// This function is the same as [`Self::cipher_final`] but with
     /// the output buffer size check removed.
     ///
-    /// SAFETY: The caller is expected to provide `output` buffer
+    /// # Safety
+    ///
+    /// The caller is expected to provide `output` buffer
     /// large enough to contain correct number of bytes. For streaming
     /// ciphers the output buffer can be empty, for block ciphers the
     /// output buffer should be at least as big as the block.
@@ -907,19 +914,19 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "Output buffer size should be at least 32 bytes.")]
+    #[should_panic(expected = "Output buffer size should be at least 33 bytes.")]
     fn full_block_updates_aes_128() {
         output_buffer_too_small(Cipher::aes_128_cbc());
     }
 
     #[test]
-    #[should_panic(expected = "Output buffer size should be at least 32 bytes.")]
+    #[should_panic(expected = "Output buffer size should be at least 33 bytes.")]
     fn full_block_updates_aes_256() {
         output_buffer_too_small(Cipher::aes_256_cbc());
     }
 
     #[test]
-    #[should_panic(expected = "Output buffer size should be at least 16 bytes.")]
+    #[should_panic(expected = "Output buffer size should be at least 17 bytes.")]
     fn full_block_updates_3des() {
         output_buffer_too_small(Cipher::des_ede3_cbc());
     }
