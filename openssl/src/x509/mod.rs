@@ -38,7 +38,7 @@ use crate::ssl::SslRef;
 use crate::stack::{Stack, StackRef, Stackable};
 use crate::string::OpensslString;
 use crate::util::{ForeignTypeExt, ForeignTypeRefExt};
-use crate::{cvt, cvt_n, cvt_p};
+use crate::{cvt, cvt_n, cvt_p, cvt_p_const};
 use openssl_macros::corresponds;
 
 #[cfg(any(ossl102, libressl261))]
@@ -382,11 +382,6 @@ foreign_type_and_impl_send_sync! {
     /// Reference to `X509`.
     pub struct X509Ref;
 }
-
-#[cfg(boringssl)]
-type X509LenTy = c_uint;
-#[cfg(not(boringssl))]
-type X509LenTy = c_int;
 
 impl X509Ref {
     /// Returns this certificate's subject name.
@@ -760,15 +755,16 @@ impl X509 {
                 let r =
                     ffi::PEM_read_bio_X509(bio.as_ptr(), ptr::null_mut(), None, ptr::null_mut());
                 if r.is_null() {
-                    let err = ffi::ERR_peek_last_error();
-                    if ffi::ERR_GET_LIB(err) as X509LenTy == ffi::ERR_LIB_PEM
-                        && ffi::ERR_GET_REASON(err) == ffi::PEM_R_NO_START_LINE
+                    let e = ErrorStack::get();
+                    let errors = e.errors();
+                    if !errors.is_empty()
+                        && errors[0].library_code() == ffi::ERR_LIB_PEM as libc::c_int
+                        && errors[0].reason_code() == ffi::PEM_R_NO_START_LINE as libc::c_int
                     {
-                        ffi::ERR_clear_error();
                         break;
                     }
 
-                    return Err(ErrorStack::get());
+                    return Err(e);
                 } else {
                     certs.push(X509(r));
                 }
@@ -1022,6 +1018,7 @@ impl X509Extension {
     /// # Safety
     ///
     /// This method modifies global state without locking and therefore is not thread safe
+    #[cfg(not(libressl390))]
     #[corresponds(X509V3_EXT_add_alias)]
     #[deprecated(
         note = "Use x509::extension types or new_from_der and then this is not necessary",
@@ -2552,8 +2549,8 @@ impl X509PurposeRef {
     #[corresponds(X509_PURPOSE_get0)]
     pub fn from_idx(idx: c_int) -> Result<&'static X509PurposeRef, ErrorStack> {
         unsafe {
-            let ptr = cvt_p(ffi::X509_PURPOSE_get0(idx))?;
-            Ok(X509PurposeRef::from_ptr(ptr))
+            let ptr = cvt_p_const(ffi::X509_PURPOSE_get0(idx))?;
+            Ok(X509PurposeRef::from_const_ptr(ptr))
         }
     }
 
