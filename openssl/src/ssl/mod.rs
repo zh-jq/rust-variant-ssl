@@ -699,11 +699,13 @@ cfg_if! {
         type SslCacheTy = i64;
         type SslCacheSize = libc::c_ulong;
         type MtuTy = u32;
+        type ModeTy = u32;
         type SizeTy = usize;
     } else {
         type SslCacheTy = i64;
         type SslCacheSize = c_long;
         type MtuTy = c_long;
+        type ModeTy = c_long;
         type SizeTy = u32;
     }
 }
@@ -913,7 +915,7 @@ impl SslContextBuilder {
     #[corresponds(SSL_CTX_set_mode)]
     pub fn set_mode(&mut self, mode: SslMode) -> SslMode {
         unsafe {
-            let bits = ffi::SSL_CTX_set_mode(self.as_ptr(), mode.bits() as MtuTy) as SslBitType;
+            let bits = ffi::SSL_CTX_set_mode(self.as_ptr(), mode.bits() as ModeTy) as SslBitType;
             SslMode::from_bits_retain(bits)
         }
     }
@@ -922,7 +924,7 @@ impl SslContextBuilder {
     #[corresponds(SSL_CTX_clear_mode)]
     pub fn clear_mode(&mut self, mode: SslMode) -> SslMode {
         unsafe {
-            let bits = ffi::SSL_CTX_clear_mode(self.as_ptr(), mode.bits() as MtuTy) as SslBitType;
+            let bits = ffi::SSL_CTX_clear_mode(self.as_ptr(), mode.bits() as ModeTy) as SslBitType;
             SslMode::from_bits_retain(bits)
         }
     }
@@ -2576,7 +2578,7 @@ impl SslRef {
     #[corresponds(SSL_set_mode)]
     pub fn set_mode(&mut self, mode: SslMode) -> SslMode {
         unsafe {
-            let bits = ffi::SSL_set_mode(self.as_ptr(), mode.bits() as MtuTy) as SslBitType;
+            let bits = ffi::SSL_set_mode(self.as_ptr(), mode.bits() as ModeTy) as SslBitType;
             SslMode::from_bits_retain(bits)
         }
     }
@@ -2585,7 +2587,7 @@ impl SslRef {
     #[corresponds(SSL_clear_mode)]
     pub fn clear_mode(&mut self, mode: SslMode) -> SslMode {
         unsafe {
-            let bits = ffi::SSL_clear_mode(self.as_ptr(), mode.bits() as MtuTy) as SslBitType;
+            let bits = ffi::SSL_clear_mode(self.as_ptr(), mode.bits() as ModeTy) as SslBitType;
             SslMode::from_bits_retain(bits)
         }
     }
