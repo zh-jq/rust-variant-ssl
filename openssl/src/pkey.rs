@@ -97,11 +97,11 @@ impl Id {
 
     #[cfg(any(ossl111, boringssl, libressl370))]
     pub const ED25519: Id = Id(ffi::EVP_PKEY_ED25519);
-    #[cfg(any(ossl111, boringssl))]
+    #[cfg(ossl111)]
     pub const ED448: Id = Id(ffi::EVP_PKEY_ED448);
     #[cfg(any(ossl111, boringssl, libressl370))]
     pub const X25519: Id = Id(ffi::EVP_PKEY_X25519);
-    #[cfg(any(ossl111, boringssl))]
+    #[cfg(ossl111)]
     pub const X448: Id = Id(ffi::EVP_PKEY_X448);
     #[cfg(ossl111)]
     pub const POLY1305: Id = Id(ffi::EVP_PKEY_POLY1305);
