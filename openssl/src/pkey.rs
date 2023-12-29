@@ -552,7 +552,7 @@ impl PKey<Private> {
     /// assert_eq!(secret.len(), 56);
     /// # Ok(()) }
     /// ```
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, boringssl))]
     pub fn generate_x448() -> Result<PKey<Private>, ErrorStack> {
         PKey::generate_eddsa(Id::X448)
     }
@@ -604,7 +604,7 @@ impl PKey<Private> {
     /// assert_eq!(signature.len(), 114);
     /// # Ok(()) }
     /// ```
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, boringssl))]
     pub fn generate_ed448() -> Result<PKey<Private>, ErrorStack> {
         PKey::generate_eddsa(Id::ED448)
     }
