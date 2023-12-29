@@ -166,7 +166,7 @@ impl Asn1Type {
 /// [`diff`]: struct.Asn1TimeRef.html#method.diff
 /// [`Asn1TimeRef`]: struct.Asn1TimeRef.html
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg(ossl102)]
+#[cfg(any(ossl102, boringssl))]
 pub struct TimeDiff {
     /// Difference in days
     pub days: c_int,
