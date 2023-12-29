@@ -809,7 +809,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(ossl102)]
+    #[cfg(any(ossl102, boringssl))]
     fn time_eq() {
         let a = Asn1Time::from_str("99991231235959Z").unwrap();
         let b = Asn1Time::from_str("99991231235959Z").unwrap();
@@ -828,7 +828,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(ossl102)]
+    #[cfg(any(ossl102, boringssl))]
     fn time_ord() {
         let a = Asn1Time::from_str("99991231235959Z").unwrap();
         let b = Asn1Time::from_str("99991231235959Z").unwrap();
