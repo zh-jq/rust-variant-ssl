@@ -314,7 +314,7 @@ fn state() {
     let s = server.client().connect();
     #[cfg(not(boringssl))]
     assert_eq!(s.ssl().state_string().trim(), "SSLOK");
-    #[cfg(boringssl)]
+    #[cfg(bssl_google)]
     assert_eq!(s.ssl().state_string(), "!!!!!!");
     assert_eq!(
         s.ssl().state_string_long(),

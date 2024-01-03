@@ -153,6 +153,8 @@ jobs:
               version: vendored
             - name: boringssl
               version: e6489902b7fb692875341b8ab5e57f0515f47bc1
+            - name: aws-lc
+              version: vendored
             - name: openssl
               version: vendored
             - name: openssl
@@ -201,6 +203,10 @@ jobs:
               library:
                 name: libressl
                 version: 3.8.2
+          exclude:
+            - target: arm-unknown-linux-gnueabihf
+              library:
+                name: aws-lc
       name: ${{ matrix.target }}-${{ matrix.library.name }}-${{ matrix.library.version }}-${{ matrix.bindgen }}
       runs-on: ubuntu-latest
       env:
@@ -342,6 +348,9 @@ jobs:
             if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
               features="$features --features unstable_boringssl"
               BORINGSSL_BUILD_DIR="$OPENSSL_DIR/build/"
+            fi
+            if [[ "${{ matrix.library.name }}" == "aws-lc" ]]; then
+              features="$features --features aws-lc"
             fi
             if [[ "${{ matrix.library.name }}" == "openssl"  && "${{ matrix.library.version }}" == "vendored" ]]; then
               features="$features --features vendored"

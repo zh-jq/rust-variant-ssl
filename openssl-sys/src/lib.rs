@@ -18,7 +18,16 @@ extern crate bssl_sys;
 #[cfg(feature = "unstable_boringssl")]
 pub use bssl_sys::*;
 
-#[cfg(all(boringssl, not(feature = "unstable_boringssl")))]
+#[cfg(feature = "aws-lc")]
+extern crate aws_lc_sys;
+#[cfg(feature = "aws-lc")]
+pub use aws_lc_sys::*;
+
+#[cfg(all(
+    boringssl,
+    not(feature = "unstable_boringssl"),
+    not(feature = "aws-lc")
+))]
 #[path = "."]
 mod boringssl {
     include!(concat!(env!("OUT_DIR"), "/bindgen.rs"));
@@ -29,7 +38,11 @@ mod boringssl {
         }
     }
 }
-#[cfg(all(boringssl, not(feature = "unstable_boringssl")))]
+#[cfg(all(
+    boringssl,
+    not(feature = "unstable_boringssl"),
+    not(feature = "aws-lc")
+))]
 pub use boringssl::*;
 
 #[cfg(openssl)]

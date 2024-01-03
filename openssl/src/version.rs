@@ -119,9 +119,13 @@ fn test_versions() {
     fn expected_name() -> &'static str {
         "LibreSSL"
     }
-    #[cfg(boringssl)]
+    #[cfg(bssl_google)]
     fn expected_name() -> &'static str {
         "BoringSSL"
+    }
+    #[cfg(bssl_aws)]
+    fn expected_name() -> &'static str {
+        "AWS-LC"
     }
 
     assert!(number() > 0);
