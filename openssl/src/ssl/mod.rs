@@ -931,7 +931,7 @@ impl SslContextBuilder {
 
     /// Returns the mode set for the context.
     #[corresponds(SSL_CTX_get_mode)]
-    pub fn mode(&mut self) -> SslMode {
+    pub fn mode(&self) -> SslMode {
         unsafe {
             let bits = ffi::SSL_CTX_get_mode(self.as_ptr()) as SslBitType;
             SslMode::from_bits_retain(bits)
@@ -2594,7 +2594,7 @@ impl SslRef {
 
     /// Returns the mode set for the SSL.
     #[corresponds(SSL_get_mode)]
-    pub fn mode(&mut self) -> SslMode {
+    pub fn mode(&self) -> SslMode {
         unsafe {
             let bits = ffi::SSL_get_mode(self.as_ptr()) as SslBitType;
             SslMode::from_bits_retain(bits)
