@@ -11,7 +11,18 @@ fn main() {
         println!("cargo:rustc-cfg=libressl");
     }
 
+    let mut is_boringssl = false;
+
     if env::var("DEP_OPENSSL_BORINGSSL").is_ok() {
+        println!("cargo:rustc-cfg=bssl_google");
+        is_boringssl = true;
+    }
+    if env::var("DEP_OPENSSL_AWS_LC").is_ok() {
+        println!("cargo:rustc-cfg=bssl_aws");
+        is_boringssl = true;
+    }
+
+    if is_boringssl {
         println!("cargo:rustc-cfg=boringssl");
     }
 

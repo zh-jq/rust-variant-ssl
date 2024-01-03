@@ -28,6 +28,7 @@ enum Version {
     Openssl10x,
     Libressl,
     Boringssl,
+    Awslc,
 }
 
 fn env_inner(name: &str) -> Option<OsString> {
@@ -63,6 +64,12 @@ fn find_openssl(target: &str) -> (Vec<PathBuf>, PathBuf) {
         // OPENSSL_NO_VENDOR exists and isn't `0`
         if env("OPENSSL_NO_VENDOR").map_or(true, |s| s == "0") {
             return find_tongsuo_vendored::get_openssl(target);
+        }
+    }
+    #[cfg(feature = "aws-lc")]
+    {
+        if let Ok(dir) = env::var("DEP_AWS_LC_0_12_1_INCLUDE") {
+            return (Vec::new(), PathBuf::from(dir));
         }
     }
     find_normal::get_openssl(target)
@@ -111,6 +118,9 @@ fn main() {
     println!("cargo:include={}", include_dir.to_string_lossy());
 
     let version = postprocess(&[include_dir]);
+    if version == Version::Awslc {
+        return;
+    }
 
     let libs_env = env("OPENSSL_LIBS");
     let libs = match libs_env.as_ref().and_then(|s| s.to_str()) {
@@ -158,7 +168,7 @@ fn postprocess(include_dirs: &[PathBuf]) -> Version {
     let version = validate_headers(include_dirs);
 
     // Never run bindgen for BoringSSL, if it was needed we already ran it.
-    if version != Version::Boringssl {
+    if version != Version::Boringssl && version != Version::Awslc {
         #[cfg(feature = "bindgen")]
         run_bindgen::run(&include_dirs);
     }
@@ -222,6 +232,7 @@ See rust-openssl documentation for more information:
     let mut openssl_version = None;
     let mut libressl_version = None;
     let mut is_boringssl = false;
+    let mut is_aws_lc = false;
     let mut is_tongsuo = false;
     for line in expanded.lines() {
         let line = line.trim();
@@ -230,6 +241,7 @@ See rust-openssl documentation for more information:
         let new_openssl_prefix = "RUST_VERSION_NEW_OPENSSL_";
         let libressl_prefix = "RUST_VERSION_LIBRESSL_";
         let boringsl_prefix = "RUST_OPENSSL_IS_BORINGSSL";
+        let aws_lc_prefix = "RUST_OPENSSL_IS_AWSLC";
         let tongsuo_prefix = "RUST_OPENSSL_IS_TONGSUO";
         let conf_prefix = "RUST_CONF_";
         if let Some(version) = line.strip_prefix(openssl_prefix) {
@@ -240,6 +252,8 @@ See rust-openssl documentation for more information:
             libressl_version = Some(parse_version(version));
         } else if let Some(conf) = line.strip_prefix(conf_prefix) {
             enabled.push(conf);
+        } else if line.starts_with(aws_lc_prefix) {
+            is_aws_lc = true;
         } else if line.starts_with(boringsl_prefix) {
             is_boringssl = true;
         } else if line.starts_with(tongsuo_prefix) {
@@ -257,6 +271,11 @@ See rust-openssl documentation for more information:
         println!("cargo:boringssl=true");
         run_bindgen::run_boringssl(include_dirs);
         return Version::Boringssl;
+    }
+    if is_aws_lc {
+        println!("cargo:rustc-cfg=boringssl");
+        println!("cargo:aws_lc=true");
+        return Version::Awslc;
     }
 
     // We set this for any non-BoringSSL lib.
