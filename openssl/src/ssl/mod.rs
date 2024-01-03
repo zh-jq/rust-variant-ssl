@@ -1293,9 +1293,9 @@ impl SslContextBuilder {
     /// The format consists of TLSv1.3 cipher suite names separated by `:` characters in order of
     /// preference.
     ///
-    /// Requires OpenSSL 1.1.1 or LibreSSL 3.4.0 or newer.
+    /// Requires AWS-LC or OpenSSL 1.1.1 or LibreSSL 3.4.0 or newer.
     #[corresponds(SSL_CTX_set_ciphersuites)]
-    #[cfg(any(ossl111, libressl340))]
+    #[cfg(any(ossl111, libressl340, bssl_aws))]
     pub fn set_ciphersuites(&mut self, cipher_list: &str) -> Result<(), ErrorStack> {
         let cipher_list = CString::new(cipher_list).unwrap();
         unsafe {
@@ -3751,7 +3751,7 @@ impl SslRef {
 
     /// Set the certificate store used for certificate verification
     #[corresponds(SSL_set_cert_store)]
-    #[cfg(ossl102)]
+    #[cfg(any(ossl102, bssl_aws))]
     pub fn set_verify_cert_store(&mut self, cert_store: X509Store) -> Result<(), ErrorStack> {
         unsafe {
             cvt(ffi::SSL_set0_verify_cert_store(self.as_ptr(), cert_store.as_ptr()) as c_int)?;
