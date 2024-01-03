@@ -275,6 +275,9 @@ See rust-openssl documentation for more information:
     if is_aws_lc {
         println!("cargo:rustc-cfg=boringssl");
         println!("cargo:aws_lc=true");
+        for cfg in cfgs::get(openssl_version, None) {
+            println!("cargo:rustc-cfg={}", cfg);
+        }
         return Version::Awslc;
     }
 
