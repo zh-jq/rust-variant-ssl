@@ -874,9 +874,9 @@ impl SslContextBuilder {
 
     /// Sets a custom certificate store for verifying peer certificates.
     ///
-    /// Requires OpenSSL 1.0.2 or newer.
+    /// Requires AWS-LC or OpenSSL 1.0.2 or newer.
     #[corresponds(SSL_CTX_set0_verify_cert_store)]
-    #[cfg(ossl102)]
+    #[cfg(any(ossl102, bssl_aws))]
     pub fn set_verify_cert_store(&mut self, cert_store: X509Store) -> Result<(), ErrorStack> {
         unsafe {
             let ptr = cert_store.as_ptr();
