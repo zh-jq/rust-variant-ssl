@@ -3,4 +3,3 @@ members = [
     "openssl",
     "openssl-sys",
 ]
-resolver = "2"

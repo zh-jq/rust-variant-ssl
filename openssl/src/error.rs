@@ -176,7 +176,7 @@ impl Error {
                     if ptr.is_null() {
                         None
                     } else {
-                        ptr::copy_nonoverlapping(data.as_ptr(), ptr, data.len());
+                        ptr::copy_nonoverlapping(data.as_ptr(), ptr as *mut u8, data.len());
                         *ptr.add(data.len()) = 0;
                         Some((ptr, ffi::ERR_TXT_MALLOCED))
                     }

@@ -85,7 +85,7 @@ where
             None
         };
         // Give the callback mutable slices into which it can write the identity and psk.
-        let identity_sl = slice::from_raw_parts_mut(identity, max_identity_len as usize);
+        let identity_sl = slice::from_raw_parts_mut(identity as *mut u8, max_identity_len as usize);
         #[allow(clippy::unnecessary_cast)]
         let psk_sl = slice::from_raw_parts_mut(psk as *mut u8, max_psk_len as usize);
         match (*callback)(ssl, hint, identity_sl, psk_sl) {
