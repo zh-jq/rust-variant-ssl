@@ -1,9 +1,9 @@
 [package]
-name = "tongsuo-sys"
-version = "0.9.98"
+name = "variant-ssl-sys"
+version = "0.10.0"
 license = "MIT"
-description = "FFI bindings to Tongsuo/OpenSSL"
-repository = "https://github.com/zh-jq/rust-tongsuo"
+description = "FFI bindings to OpenSSL variants such as BoringSSL / AWS-LC / Tongsuo"
+repository = "https://github.com/zh-jq/rust-variant-ssl"
 readme = "README.md"
 categories = ["cryptography", "external-ffi-bindings"]
 links = "openssl"
@@ -11,10 +11,10 @@ build = "build/main.rs"
 edition = "2018"
 
 [features]
-vendored = ['openssl-src']
-tongsuo = ['tongsuo-src']
-unstable_boringssl = ['bssl-sys']
-aws-lc = ["aws-lc-sys"]
+vendored = ["dep:openssl-src"]
+tongsuo = ["dep:tongsuo-src"]
+boringssl = ["dep:bssl-sys"]
+aws-lc = ["dep:aws-lc-sys"]
 bindgen = ["dep:bindgen", "aws-lc-sys?/bindgen"]
 
 [dependencies]

@@ -1,6 +1,6 @@
 #![allow(bad_style, deprecated, clippy::all)]
 
 use libc::*;
-use openssl_sys::*;
+use variant_ssl_sys::*;
 
 include!(concat!(env!("OUT_DIR"), "/all.rs"));

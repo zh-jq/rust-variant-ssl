@@ -6,16 +6,16 @@
     non_upper_case_globals,
     unused_imports
 )]
-#![cfg_attr(feature = "unstable_boringssl", allow(ambiguous_glob_reexports))]
-#![doc(html_root_url = "https://docs.rs/openssl-sys/0.9")]
+#![cfg_attr(feature = "boringssl", allow(ambiguous_glob_reexports))]
+#![doc(html_root_url = "https://docs.rs/variant-ssl-sys/0.10")]
 #![recursion_limit = "128"] // configure fixed limit across all rust versions
 
 extern crate libc;
 pub use libc::c_int;
 
-#[cfg(feature = "unstable_boringssl")]
+#[cfg(feature = "boringssl")]
 extern crate bssl_sys;
-#[cfg(feature = "unstable_boringssl")]
+#[cfg(feature = "boringssl")]
 pub use bssl_sys::*;
 
 #[cfg(feature = "aws-lc")]
@@ -25,7 +25,7 @@ pub use aws_lc_sys::*;
 
 #[cfg(all(
     boringssl,
-    not(feature = "unstable_boringssl"),
+    not(feature = "boringssl"),
     not(feature = "aws-lc")
 ))]
 #[path = "."]
@@ -40,7 +40,7 @@ mod boringssl {
 }
 #[cfg(all(
     boringssl,
-    not(feature = "unstable_boringssl"),
+    not(feature = "boringssl"),
     not(feature = "aws-lc")
 ))]
 pub use boringssl::*;

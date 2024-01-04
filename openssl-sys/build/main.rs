@@ -76,7 +76,7 @@ fn find_openssl(target: &str) -> (Vec<PathBuf>, PathBuf) {
 }
 
 fn check_ssl_kind() {
-    if cfg!(feature = "unstable_boringssl") {
+    if cfg!(feature = "boringssl") {
         println!("cargo:rustc-cfg=boringssl");
         println!("cargo:boringssl=true");
 

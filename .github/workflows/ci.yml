@@ -346,7 +346,7 @@ jobs:
               features="--no-default-features"
             fi
             if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
-              features="$features --features unstable_boringssl"
+              features="$features --features boringssl"
               BORINGSSL_BUILD_DIR="$OPENSSL_DIR/build/"
             fi
             if [[ "${{ matrix.library.name }}" == "aws-lc" ]]; then
