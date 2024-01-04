@@ -329,7 +329,7 @@ jobs:
             key: target-${{ matrix.target }}-${{ matrix.bindgen }}-${{ matrix.library.name }}-${{ matrix.library.version }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
         - name: Test openssl
           run: |
-            if [[ "${{ matrix.library.name }}" != "tongsuo" ]]; then
+            if [[ "${{ matrix.library.name }}" == "tongsuo" ]]; then
               features="--features tongsuo"
             fi
             if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
