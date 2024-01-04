@@ -1,21 +1,22 @@
-# rust-tongsuo
+# variant-ssl
 
-Tongsuo bindings for the Rust programming language,
+Rust bindings for OpenSSL variants, such as BoringSSL / AWS-LC / Tongsuo,
 based on [rust-openssl](https://github.com/sfackler/rust-openssl).
 
-The default feature will use Tongsuo, you can disable **tongsuo** feature to use OpenSSL.
-
-[Documentation](https://docs.rs/openssl).
+[Documentation](https://docs.rs/variant-ssl).
 
 ## Release Support
 
-The current supported release of `tongsuo` is 0.10 and `tongsuo-sys` is 0.9.
+The current supported release of `variant-ssl` is 0.11 and `variant-ssl-sys` is 0.10.
 
-New major versions will be published at most once per year. After a new
-release, the previous major version will be partially supported with bug
-fixes for 3 months, after which support will be dropped entirely.
+We will pull in changes from [rust-openssl](https://github.com/sfacker/rust-openssl).
 
 ### Contribution
+
+Changes should be sent to [rust-openssl](https://github.com/sfacker/rust-openssl) first,
+and then we can pull them in after merged.
+
+If rejected or ignored (e.g. Tongsuo / AWS-LC specific), you can submit PRs in this repo.
 
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0

@@ -120,7 +120,7 @@
 //! #[cfg(openssl111)]
 //! ctx.set_ciphersuites("TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256").unwrap();
 //! ```
-#![doc(html_root_url = "https://docs.rs/openssl/0.10")]
+#![doc(html_root_url = "https://docs.rs/variant-ssl/0.11")]
 #![warn(rust_2018_idioms)]
 #![allow(clippy::uninlined_format_args, clippy::needless_doctest_main)]
 
