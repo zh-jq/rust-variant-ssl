@@ -1090,6 +1090,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(tongsuo))]
     fn test_rc4() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
@@ -1348,6 +1349,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(tongsuo))]
     fn test_des_cbc() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
@@ -1361,6 +1363,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(tongsuo))]
     fn test_des_ecb() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
