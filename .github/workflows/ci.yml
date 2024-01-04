@@ -81,7 +81,7 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo check -p tongsuo
+      - run: cargo check
 
   windows-vcpkg:
     name: windows-vcpkg
@@ -109,7 +109,7 @@ jobs:
         with:
           path: target
           key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo test -p tongsuo --tests
+      - run: cargo test --tests
 
   macos-homebrew:
     name: macos-homebrew
@@ -135,7 +135,7 @@ jobs:
       #   with:
       #     path: target
       #     key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
-      - run: cargo test -p tongsuo --tests
+      - run: cargo test --tests
 
   linux:
       strategy:
@@ -169,15 +169,7 @@ jobs:
             - name: openssl
               version: 1.0.2u
               dl-path: /old/1.0.2
-            - name: openssl
-              version: 1.0.1u
-              dl-path: /old/1.0.1
           include:
-            - target: x86_64-unknown-linux-gnu
-              bindgen: true
-              library:
-                name: libressl
-                version: 2.5.5
             - target: x86_64-unknown-linux-gnu
               bindgen: true
               library:
@@ -188,11 +180,6 @@ jobs:
               library:
                 name: libressl
                 version: 3.8.2
-            - target: x86_64-unknown-linux-gnu
-              bindgen: false
-              library:
-                name: libressl
-                version: 2.5.5
             - target: x86_64-unknown-linux-gnu
               bindgen: false
               library:
@@ -343,17 +330,17 @@ jobs:
         - name: Test openssl
           run: |
             if [[ "${{ matrix.library.name }}" != "tongsuo" ]]; then
-              features="--no-default-features"
+              features="--features tongsuo"
             fi
             if [[ "${{ matrix.library.name }}" == "boringssl" && "${{ matrix.bindgen }}" != "true" ]]; then
-              features="$features --features boringssl"
+              features="--features boringssl"
               BORINGSSL_BUILD_DIR="$OPENSSL_DIR/build/"
             fi
             if [[ "${{ matrix.library.name }}" == "aws-lc" ]]; then
-              features="$features --features aws-lc"
+              features="--features aws-lc"
             fi
             if [[ "${{ matrix.library.name }}" == "openssl"  && "${{ matrix.library.version }}" == "vendored" ]]; then
-              features="$features --features vendored"
+              features="--features vendored"
             fi
             if [[ "${{ matrix.bindgen }}" == "true" ]]; then
               features="$features --features bindgen"
