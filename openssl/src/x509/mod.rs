@@ -560,7 +560,7 @@ impl X509Ref {
         ///
         /// [`X509_pubkey_digest`]: https://www.openssl.org/docs/manmaster/man3/X509_pubkey_digest.html
         pubkey_digest,
-        ffi::X509_digest
+        ffi::X509_pubkey_digest
     }
 
     #[deprecated(since = "0.10.9", note = "renamed to digest")]
