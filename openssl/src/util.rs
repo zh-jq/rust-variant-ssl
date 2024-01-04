@@ -49,7 +49,7 @@ where
     let callback = &mut *(cb_state as *mut CallbackState<F>);
 
     let result = panic::catch_unwind(AssertUnwindSafe(|| {
-        let pass_slice = slice::from_raw_parts_mut(buf as *mut u8, size as usize);
+        let pass_slice = slice::from_raw_parts_mut(buf, size as usize);
         callback.cb.take().unwrap()(pass_slice)
     }));
 
