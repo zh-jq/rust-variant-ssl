@@ -61,8 +61,8 @@ fn find_openssl(target: &str) -> (Vec<PathBuf>, PathBuf) {
     #[cfg(feature = "tongsuo")]
     {
         // vendor if the feature is present, unless
-        // OPENSSL_NO_VENDOR exists and isn't `0`
-        if env("OPENSSL_NO_VENDOR").map_or(true, |s| s == "0") {
+        // TONGSUO_NO_VENDOR exists and isn't `0`
+        if env("TONGSUO_NO_VENDOR").map_or(true, |s| s == "0") {
             return find_tongsuo_vendored::get_openssl(target);
         }
     }
@@ -286,6 +286,7 @@ See rust-openssl documentation for more information:
     }
     if is_tongsuo {
         println!("cargo:rustc-cfg=tongsuo");
+        println!("cargo:tongsuo=true");
     }
 
     if let Some(libressl_version) = libressl_version {
