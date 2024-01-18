@@ -443,6 +443,22 @@ impl<T> PKey<T> {
         }
     }
 
+    /// Creates a new `PKey` containing a Diffie-Hellman key with type DHX.
+    #[cfg(all(not(boringssl), ossl110))]
+    pub fn from_dhx(dh: Dh<T>) -> Result<PKey<T>, ErrorStack> {
+        unsafe {
+            let evp = cvt_p(ffi::EVP_PKEY_new())?;
+            let pkey = PKey::from_ptr(evp);
+            cvt(ffi::EVP_PKEY_assign(
+                pkey.0,
+                ffi::EVP_PKEY_DHX,
+                dh.as_ptr().cast(),
+            ))?;
+            mem::forget(dh);
+            Ok(pkey)
+        }
+    }
+
     /// Creates a new `PKey` containing an elliptic curve key.
     #[corresponds(EVP_PKEY_assign_EC_KEY)]
     pub fn from_ec_key(ec_key: EcKey<T>) -> Result<PKey<T>, ErrorStack> {
@@ -747,12 +763,22 @@ impl PKey<Private> {
 }
 
 impl PKey<Public> {
-    from_pem! {
+    private_key_from_pem! {
         /// Decodes a PEM-encoded SubjectPublicKeyInfo structure.
         ///
         /// The input should have a header of `-----BEGIN PUBLIC KEY-----`.
         #[corresponds(PEM_read_bio_PUBKEY)]
         public_key_from_pem,
+
+        /// Decodes a PEM-encoded SubjectPublicKeyInfo structure.
+        #[corresponds(PEM_read_bio_PUBKEY)]
+        public_key_from_pem_passphrase,
+
+        /// Decodes a PEM-encoded SubjectPublicKeyInfo structure.
+        ///
+        /// The callback should fill the password into the provided buffer and return its length.
+        #[corresponds(PEM_read_bio_PrivateKey)]
+        public_key_from_pem_callback,
         PKey<Public>,
         ffi::PEM_read_bio_PUBKEY
     }
