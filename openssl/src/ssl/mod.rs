@@ -1525,6 +1525,14 @@ impl SslContextBuilder {
         unsafe { X509VerifyParamRef::from_ptr_mut(ffi::SSL_CTX_get0_param(self.as_ptr())) }
     }
 
+    /// Sets the status response a client wishes the server to reply with.
+    #[corresponds(SSL_CTX_set_tlsext_status_type)]
+    pub fn set_status_type(&mut self, type_: StatusType) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::SSL_CTX_set_tlsext_status_type(self.as_ptr(), type_.as_raw()) as c_int).map(|_| ())
+        }
+    }
+
     /// Sets the callback dealing with OCSP stapling.
     ///
     /// On the client side, this callback is responsible for validating the OCSP status response

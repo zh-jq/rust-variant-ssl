@@ -38,6 +38,15 @@ pub unsafe fn SSL_set_tlsext_status_type(s: *mut SSL, type_: c_int) -> c_long {
     )
 }
 
+pub unsafe fn SSL_get_tlsext_status_type(s: *mut SSL) -> c_long {
+    SSL_ctrl(
+        s,
+        SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE,
+        0,
+        ptr::null_mut(),
+    )
+}
+
 pub unsafe fn SSL_get_tlsext_status_ocsp_resp(ssl: *mut SSL, resp: *mut *mut c_uchar) -> c_long {
     SSL_ctrl(
         ssl,
@@ -96,3 +105,22 @@ pub unsafe fn SSL_CTX_set_tlsext_status_cb(
 pub unsafe fn SSL_CTX_set_tlsext_status_arg(ctx: *mut SSL_CTX, arg: *mut c_void) -> c_long {
     SSL_CTX_ctrl(ctx, SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB_ARG, 0, arg)
 }
+
+pub unsafe fn SSL_CTX_set_tlsext_status_type(ctx: *mut SSL_CTX, type_: c_int) -> c_long {
+    SSL_CTX_ctrl(
+        ctx,
+        SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE,
+        type_ as c_long,
+        ptr::null_mut(),
+    )
+}
+
+pub unsafe fn SSL_CTX_get_tlsext_status_type(ctx: *mut SSL_CTX) -> c_long {
+    SSL_CTX_ctrl(
+        ctx,
+        SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE,
+        0,
+        ptr::null_mut(),
+    )
+}
+
