@@ -380,7 +380,7 @@ pub const SSL_CTRL_GET_EXTMS_SUPPORT: c_int = 122;
 pub const SSL_CTRL_SET_MIN_PROTO_VERSION: c_int = 123;
 #[cfg(any(ossl110, libressl261))]
 pub const SSL_CTRL_SET_MAX_PROTO_VERSION: c_int = 124;
-pub const SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE: cint = 127;
+pub const SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE: c_int = 127;
 #[cfg(any(ossl110g, libressl270))]
 pub const SSL_CTRL_GET_MIN_PROTO_VERSION: c_int = 130;
 #[cfg(any(ossl110g, libressl270))]

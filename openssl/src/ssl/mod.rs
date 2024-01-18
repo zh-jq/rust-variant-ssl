@@ -1529,7 +1529,17 @@ impl SslContextBuilder {
     #[corresponds(SSL_CTX_set_tlsext_status_type)]
     pub fn set_status_type(&mut self, type_: StatusType) -> Result<(), ErrorStack> {
         unsafe {
-            cvt(ffi::SSL_CTX_set_tlsext_status_type(self.as_ptr(), type_.as_raw()) as c_int).map(|_| ())
+            cvt(ffi::SSL_CTX_set_tlsext_status_type(self.as_ptr(), type_.as_raw()) as c_int)
+                .map(|_| ())
+        }
+    }
+
+    /// Enables OCSP stapling on all client SSL objects created from ctx
+    #[corresponds(SSL_CTX_enable_ocsp_stapling)]
+    #[cfg(boringssl)]
+    pub fn enable_ocsp_stapling(&mut self) {
+        unsafe {
+            ffi::SSL_CTX_enable_ocsp_stapling(self.as_ptr());
         }
     }
 
@@ -3184,6 +3194,15 @@ impl SslRef {
         }
     }
 
+    /// Causes ssl (which must be the client end of a connection) to request a stapled OCSP response from the server
+    #[corresponds(SSL_enable_ocsp_stapling)]
+    #[cfg(boringssl)]
+    pub fn enable_ocsp_stapling(&mut self) {
+        unsafe {
+            ffi::SSL_enable_ocsp_stapling(self.as_ptr());
+        }
+    }
+
     /// Determines if current session used Extended Master Secret
     ///
     /// Returns `None` if the handshake is still in-progress.
@@ -3214,8 +3233,25 @@ impl SslRef {
         }
     }
 
+    /// Returns the server's OCSP response, if present.
+    #[corresponds(SSL_get0_ocsp_response)]
+    #[cfg(boringssl)]
+    pub fn ocsp_status(&self) -> Option<&[u8]> {
+        unsafe {
+            let mut p = ptr::null_mut();
+            let mut len: c_long = 0;
+            ffi::SSL_get0_ocsp_response(self.as_ptr(), &mut p, &mut len);
+
+            if len < 0 {
+                None
+            } else {
+                Some(slice::from_raw_parts(p as *const u8, len as usize))
+            }
+        }
+    }
+
     /// Sets the OCSP response to be returned to the client.
-    #[corresponds(SSL_set_tlsext_status_oscp_resp)]
+    #[corresponds(SSL_set_tlsext_status_ocsp_resp)]
     #[cfg(not(boringssl))]
     pub fn set_ocsp_status(&mut self, response: &[u8]) -> Result<(), ErrorStack> {
         unsafe {
@@ -3232,6 +3268,19 @@ impl SslRef {
                 ffi::OPENSSL_free(p);
                 e
             })
+        }
+    }
+
+    /// Sets the OCSP response to be returned to the client.
+    #[corresponds(SSL_set_ocsp_response)]
+    #[cfg(boringssl)]
+    pub fn set_ocsp_status(&mut self, response: &[u8]) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::SSL_set_ocsp_response(
+                self.as_ptr(),
+                response.as_ptr(),
+                response.len() as c_long,
+            ))
         }
     }
 
