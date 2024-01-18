@@ -1527,6 +1527,7 @@ impl SslContextBuilder {
 
     /// Sets the status response a client wishes the server to reply with.
     #[corresponds(SSL_CTX_set_tlsext_status_type)]
+    #[cfg(not(boringssl))]
     pub fn set_status_type(&mut self, type_: StatusType) -> Result<(), ErrorStack> {
         unsafe {
             cvt(ffi::SSL_CTX_set_tlsext_status_type(self.as_ptr(), type_.as_raw()) as c_int)
@@ -3238,14 +3239,14 @@ impl SslRef {
     #[cfg(boringssl)]
     pub fn ocsp_status(&self) -> Option<&[u8]> {
         unsafe {
-            let mut p = ptr::null_mut();
-            let mut len: c_long = 0;
+            let mut p = ptr::null();
+            let mut len: usize = 0;
             ffi::SSL_get0_ocsp_response(self.as_ptr(), &mut p, &mut len);
 
-            if len < 0 {
+            if len == 0 {
                 None
             } else {
-                Some(slice::from_raw_parts(p as *const u8, len as usize))
+                Some(slice::from_raw_parts(p as *const u8, len))
             }
         }
     }
@@ -3279,8 +3280,9 @@ impl SslRef {
             cvt(ffi::SSL_set_ocsp_response(
                 self.as_ptr(),
                 response.as_ptr(),
-                response.len() as c_long,
+                response.len(),
             ))
+            .map(|_| ())
         }
     }
 
