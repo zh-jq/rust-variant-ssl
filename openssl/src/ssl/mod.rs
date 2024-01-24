@@ -938,6 +938,20 @@ impl SslContextBuilder {
         }
     }
 
+    /// Configure OpenSSL to use the default built-in DH parameters.
+    ///
+    /// If “auto” DH parameters are switched on then the parameters will be selected to be
+    /// consistent with the size of the key associated with the server's certificate.
+    /// If there is no certificate (e.g. for PSK ciphersuites), then it it will be consistent
+    /// with the size of the negotiated symmetric cipher key.
+    ///
+    /// Requires OpenSSL 3.0.0.
+    #[corresponds(SSL_CTX_set_dh_auto)]
+    #[cfg(ossl300)]
+    pub fn set_dh_auto(&mut self, onoff: bool) -> Result<(), ErrorStack> {
+        unsafe { cvt(ffi::SSL_CTX_set_dh_auto(self.as_ptr(), onoff as c_int)).map(|_| ()) }
+    }
+
     /// Sets the parameters to be used during ephemeral Diffie-Hellman key exchange.
     #[corresponds(SSL_CTX_set_tmp_dh)]
     pub fn set_tmp_dh(&mut self, dh: &DhRef<Params>) -> Result<(), ErrorStack> {
@@ -2706,6 +2720,15 @@ impl SslRef {
                 Some(ssl_raw_verify::<F>),
             );
         }
+    }
+
+    /// Like [`SslContextBuilder::set_dh_auto`].
+    ///
+    /// [`SslContextBuilder::set_dh_auto`]: struct.SslContextBuilder.html#method.set_dh_auto
+    #[corresponds(SSL_set_dh_auto)]
+    #[cfg(ossl300)]
+    pub fn set_dh_auto(&mut self, onoff: bool) -> Result<(), ErrorStack> {
+        unsafe { cvt(ffi::SSL_set_dh_auto(self.as_ptr(), onoff as c_int)).map(|_| ()) }
     }
 
     /// Like [`SslContextBuilder::set_tmp_dh`].
