@@ -240,7 +240,7 @@ impl SslAcceptor {
         ctx.set_cipher_list(
             "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:\
              ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:\
-             DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"
+             DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305"
         )?;
         #[cfg(any(ossl111, libressl340))]
         ctx.set_ciphersuites(
@@ -263,6 +263,22 @@ impl SslAcceptor {
         ctx.set_min_proto_version(Some(SslVersion::TLS1_3))?;
         ctx.set_ciphersuites(
             "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256",
+        )?;
+        Ok(SslAcceptorBuilder(ctx))
+    }
+
+    /// Creates a new builder configured to connect to tlcp clients.
+    ///
+    /// Requires Tongsuo.
+    #[cfg(tongsuo)]
+    pub fn tlcp() -> Result<SslAcceptorBuilder, ErrorStack> {
+        let mut ctx = ctx(SslMethod::ntls_server())?;
+        ctx.enable_force_ntls();
+        setup_curves(&mut ctx)?;
+        ctx.set_cipher_list(
+            "ECDHE-SM2-WITH-SM4-SM3:ECC-SM2-WITH-SM4-SM3:\
+             ECDHE-SM2-SM4-CBC-SM3:ECDHE-SM2-SM4-GCM-SM3:ECC-SM2-SM4-CBC-SM3:ECC-SM2-SM4-GCM-SM3:\
+             RSA-SM4-CBC-SM3:RSA-SM4-GCM-SM3:RSA-SM4-CBC-SHA256:RSA-SM4-GCM-SHA256",
         )?;
         Ok(SslAcceptorBuilder(ctx))
     }
