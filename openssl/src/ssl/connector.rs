@@ -275,10 +275,9 @@ impl SslAcceptor {
     pub fn tlcp() -> Result<SslAcceptorBuilder, ErrorStack> {
         let mut ctx = ctx(SslMethod::ntls_server())?;
         ctx.enable_force_ntls();
-        ctx.set_groups_list("X25519:P-256:P-384")?;
+        // the EC curves should always be SM2
         ctx.set_cipher_list(
-            "ECDHE-SM2-WITH-SM4-SM3:ECC-SM2-WITH-SM4-SM3:\
-             ECDHE-SM2-SM4-CBC-SM3:ECDHE-SM2-SM4-GCM-SM3:ECC-SM2-SM4-CBC-SM3:ECC-SM2-SM4-GCM-SM3:\
+            "ECDHE-SM2-SM4-CBC-SM3:ECDHE-SM2-SM4-GCM-SM3:ECC-SM2-SM4-CBC-SM3:ECC-SM2-SM4-GCM-SM3:\
              RSA-SM4-CBC-SM3:RSA-SM4-GCM-SM3:RSA-SM4-CBC-SHA256:RSA-SM4-GCM-SHA256",
         )?;
         Ok(SslAcceptorBuilder(ctx))
