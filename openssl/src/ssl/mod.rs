@@ -1954,9 +1954,9 @@ impl SslContextBuilder {
 
     /// Sets the context's supported elliptic curve groups.
     ///
-    /// Requires OpenSSL 1.1.1 or LibreSSL 2.5.1 or newer.
+    /// Requires BoringSSL or OpenSSL 1.1.1 or LibreSSL 2.5.1 or newer.
     #[corresponds(SSL_CTX_set1_groups_list)]
-    #[cfg(any(ossl111, libressl251))]
+    #[cfg(any(ossl111, boringssl, libressl251))]
     pub fn set_groups_list(&mut self, groups: &str) -> Result<(), ErrorStack> {
         let groups = CString::new(groups).unwrap();
         unsafe {

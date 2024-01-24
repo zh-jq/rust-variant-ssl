@@ -447,7 +447,7 @@ cfg_if! {
                 s as *const c_void as *mut c_void,
             )
         }
-    } else if #[cfg(libressl251)] {
+    } else if #[cfg(any(boringssl, libressl251))] {
         extern "C" {
             pub fn SSL_CTX_set1_groups_list(ctx: *mut SSL_CTX, s: *const c_char) -> c_int;
         }
