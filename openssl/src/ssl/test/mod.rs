@@ -905,16 +905,6 @@ fn test_mozilla_server(new: fn(SslMethod) -> Result<SslAcceptorBuilder, ErrorSta
 }
 
 #[test]
-fn connector_client_server_mozilla_intermediate() {
-    test_mozilla_server(SslAcceptor::mozilla_intermediate);
-}
-
-#[test]
-fn connector_client_server_mozilla_modern() {
-    test_mozilla_server(SslAcceptor::mozilla_modern);
-}
-
-#[test]
 fn connector_client_server_mozilla_intermediate_v5() {
     test_mozilla_server(SslAcceptor::mozilla_intermediate_v5);
 }

@@ -2,7 +2,6 @@ use cfg_if::cfg_if;
 use std::io::{Read, Write};
 use std::ops::{Deref, DerefMut};
 
-use crate::dh::Dh;
 use crate::error::ErrorStack;
 #[cfg(any(ossl111, libressl340))]
 use crate::ssl::SslVersion;
@@ -13,6 +12,7 @@ use crate::ssl::{
 use crate::version;
 use std::net::IpAddr;
 
+#[allow(unused)]
 const FFDHE_2048: &str = "
 -----BEGIN DH PARAMETERS-----
 MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
@@ -234,9 +234,9 @@ impl SslAcceptor {
     pub fn mozilla_intermediate_v5(method: SslMethod) -> Result<SslAcceptorBuilder, ErrorStack> {
         let mut ctx = ctx(method)?;
         ctx.set_options(SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1);
-        let dh = Dh::params_from_pem(FFDHE_2048.as_bytes())?;
-        ctx.set_tmp_dh(&dh)?;
-        setup_curves(&mut ctx)?;
+        setup_dh_params(&mut ctx)?;
+        #[cfg(any(ossl111, boringssl, libressl251))]
+        ctx.set_groups_list("X25519:P-256:P-384")?;
         ctx.set_cipher_list(
             "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:\
              ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:\
@@ -261,6 +261,7 @@ impl SslAcceptor {
     pub fn mozilla_modern_v5(method: SslMethod) -> Result<SslAcceptorBuilder, ErrorStack> {
         let mut ctx = ctx(method)?;
         ctx.set_min_proto_version(Some(SslVersion::TLS1_3))?;
+        ctx.set_groups_list("X25519:P-256:P-384")?;
         ctx.set_ciphersuites(
             "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256",
         )?;
@@ -274,63 +275,11 @@ impl SslAcceptor {
     pub fn tlcp() -> Result<SslAcceptorBuilder, ErrorStack> {
         let mut ctx = ctx(SslMethod::ntls_server())?;
         ctx.enable_force_ntls();
-        setup_curves(&mut ctx)?;
+        ctx.set_groups_list("X25519:P-256:P-384")?;
         ctx.set_cipher_list(
             "ECDHE-SM2-WITH-SM4-SM3:ECC-SM2-WITH-SM4-SM3:\
              ECDHE-SM2-SM4-CBC-SM3:ECDHE-SM2-SM4-GCM-SM3:ECC-SM2-SM4-CBC-SM3:ECC-SM2-SM4-GCM-SM3:\
              RSA-SM4-CBC-SM3:RSA-SM4-GCM-SM3:RSA-SM4-CBC-SHA256:RSA-SM4-GCM-SHA256",
-        )?;
-        Ok(SslAcceptorBuilder(ctx))
-    }
-
-    /// Creates a new builder configured to connect to non-legacy clients. This should generally be
-    /// considered a reasonable default choice.
-    ///
-    /// This corresponds to the intermediate configuration of version 4 of Mozilla's server side TLS
-    /// recommendations. See its [documentation][docs] for more details on specifics.
-    ///
-    /// [docs]: https://wiki.mozilla.org/Security/Server_Side_TLS
-    // FIXME remove in next major version
-    pub fn mozilla_intermediate(method: SslMethod) -> Result<SslAcceptorBuilder, ErrorStack> {
-        let mut ctx = ctx(method)?;
-        ctx.set_options(SslOptions::CIPHER_SERVER_PREFERENCE);
-        #[cfg(any(ossl111, libressl340))]
-        ctx.set_options(SslOptions::NO_TLSV1_3);
-        let dh = Dh::params_from_pem(FFDHE_2048.as_bytes())?;
-        ctx.set_tmp_dh(&dh)?;
-        setup_curves(&mut ctx)?;
-        ctx.set_cipher_list(
-            "ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:\
-             ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:\
-             DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:\
-             ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:\
-             ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:\
-             DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:\
-             EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:\
-             AES256-SHA:DES-CBC3-SHA:!DSS",
-        )?;
-        Ok(SslAcceptorBuilder(ctx))
-    }
-
-    /// Creates a new builder configured to connect to modern clients.
-    ///
-    /// This corresponds to the modern configuration of version 4 of Mozilla's server side TLS recommendations.
-    /// See its [documentation][docs] for more details on specifics.
-    ///
-    /// [docs]: https://wiki.mozilla.org/Security/Server_Side_TLS
-    // FIXME remove in next major version
-    pub fn mozilla_modern(method: SslMethod) -> Result<SslAcceptorBuilder, ErrorStack> {
-        let mut ctx = ctx(method)?;
-        ctx.set_options(
-            SslOptions::CIPHER_SERVER_PREFERENCE | SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1,
-        );
-        #[cfg(any(ossl111, libressl340))]
-        ctx.set_options(SslOptions::NO_TLSV1_3);
-        setup_curves(&mut ctx)?;
-        ctx.set_cipher_list(
-            "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:\
-             ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:\
-             ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256",
         )?;
         Ok(SslAcceptorBuilder(ctx))
     }
@@ -380,22 +329,16 @@ impl DerefMut for SslAcceptorBuilder {
 }
 
 cfg_if! {
-    if #[cfg(ossl110)] {
-        #[allow(clippy::unnecessary_wraps)]
-        fn setup_curves(_: &mut SslContextBuilder) -> Result<(), ErrorStack> {
-            Ok(())
-        }
-    } else if #[cfg(any(ossl102, libressl))] {
-        fn setup_curves(ctx: &mut SslContextBuilder) -> Result<(), ErrorStack> {
-            ctx.set_ecdh_auto(true)
+    if #[cfg(ossl300)] {
+        fn setup_dh_params(ctx: &mut SslContextBuilder) -> Result<(), ErrorStack> {
+            ctx.set_dh_auto(true)
         }
     } else {
-        fn setup_curves(ctx: &mut SslContextBuilder) -> Result<(), ErrorStack> {
-            use crate::ec::EcKey;
-            use crate::nid::Nid;
+        fn setup_dh_params(ctx: &mut SslContextBuilder) -> Result<(), ErrorStack> {
+            use crate::dh::Dh;
 
-            let curve = EcKey::from_curve_name(Nid::X9_62_PRIME256V1)?;
-            ctx.set_tmp_ecdh(&curve)
+            let dh = Dh::params_from_pem(FFDHE_2048.as_bytes())?;
+            ctx.set_tmp_dh(&dh)
         }
     }
 }
