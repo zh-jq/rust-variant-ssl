@@ -3915,6 +3915,11 @@ impl<S> MidHandshakeSslStream<S> {
         self.stream.ssl()
     }
 
+    /// Returns a mutable reference to the `Ssl` of the stream.
+    pub fn ssl_mut(&mut self) -> &mut SslRef {
+        self.stream.ssl_mut()
+    }
+
     /// Returns the underlying error which interrupted this handshake.
     pub fn error(&self) -> &Error {
         &self.error
@@ -4397,6 +4402,11 @@ impl<S> SslStream<S> {
     pub fn ssl(&self) -> &SslRef {
         &self.ssl
     }
+
+    /// Returns a mutable reference to the `Ssl` object associated with this stream.
+    pub fn ssl_mut(&mut self) -> &mut SslRef {
+        &mut self.ssl
+    }
 }
 
 impl<S: Read + Write> Read for SslStream<S> {
@@ -4617,6 +4627,11 @@ impl<S> SslStreamBuilder<S> {
     /// Returns a shared reference to the `Ssl` object associated with this builder.
     pub fn ssl(&self) -> &SslRef {
         &self.inner.ssl
+    }
+
+    /// Returns a mutable reference to the `Ssl` object associated with this builder.
+    pub fn ssl_mut(&mut self) -> &mut SslRef {
+        &mut self.inner.ssl
     }
 
     /// Set the DTLS MTU size.
