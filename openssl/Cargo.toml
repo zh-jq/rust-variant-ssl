@@ -1,6 +1,6 @@
 [package]
 name = "variant-ssl"
-version = "0.11.2"
+version = "0.11.3"
 license = "Apache-2.0"
 description = "Bindings for OpenSSL variants such as BoringSSL / AWS-LC / Tongsuo"
 repository = "https://github.com/zh-jq/rust-variant-ssl"
