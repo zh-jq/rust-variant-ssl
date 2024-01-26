@@ -516,12 +516,12 @@ impl TlsExtType {
     /// server name.
     ///
     /// This corresponds to `TLSEXT_TYPE_server_name`.
-    pub const SERVER_NAME: TlsExtType = TlsExtType(ffi::TLSEXT_TYPE_server_name);
+    pub const SERVER_NAME: TlsExtType = TlsExtType(ffi::TLSEXT_TYPE_server_name as _);
 
     /// application layer protocol negotiation.
     ///
     /// This corresponds to `TLSEXT_TYPE_application_layer_protocol_negotiation`.
-    pub const ALPN: TlsExtType = TlsExtType(ffi::TLSEXT_TYPE_application_layer_protocol_negotiation);
+    pub const ALPN: TlsExtType = TlsExtType(ffi::TLSEXT_TYPE_application_layer_protocol_negotiation as _);
 
     /// Constructs an `TlsExtType` from a raw value.
     pub fn from_raw(raw: c_uint) -> TlsExtType {
