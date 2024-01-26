@@ -26,6 +26,8 @@ use crate::ssl::{
     try_get_session_ctx_index, SniError, Ssl, SslAlert, SslContext, SslContextRef, SslRef,
     SslSession, SslSessionRef,
 };
+#[cfg(boringssl)]
+use crate::ssl::{ClientHello, SelectCertError};
 #[cfg(ossl111)]
 use crate::ssl::{ClientHelloResponse, ExtensionContext};
 #[cfg(ossl111)]
@@ -703,5 +705,26 @@ where
             e.put();
             ffi::SSL_CLIENT_HELLO_ERROR
         }
+    }
+}
+
+#[cfg(boringssl)]
+pub(super) unsafe extern "C" fn raw_select_cert<F>(
+    client_hello: *const ffi::SSL_CLIENT_HELLO,
+) -> ffi::ssl_select_cert_result_t
+where
+    F: Fn(ClientHello<'_>) -> Result<(), SelectCertError> + Sync + Send + 'static,
+{
+    // SAFETY: boring provides valid inputs.
+    let client_hello = ClientHello(unsafe { &*client_hello });
+
+    let ssl_context = client_hello.ssl().ssl_context().to_owned();
+    let callback = ssl_context
+        .ex_data(SslContext::cached_ex_index::<F>())
+        .expect("BUG: select cert callback missing");
+
+    match callback(client_hello) {
+        Ok(()) => ffi::ssl_select_cert_result_t_ssl_select_cert_success,
+        Err(e) => e.0,
     }
 }
