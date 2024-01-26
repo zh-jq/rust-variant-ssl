@@ -508,6 +508,33 @@ bitflags! {
     }
 }
 
+/// TLS Extension Type
+#[derive(Copy, Clone)]
+pub struct TlsExtType(c_uint);
+
+impl TlsExtType {
+    /// server name.
+    ///
+    /// This corresponds to `TLSEXT_TYPE_server_name`.
+    pub const SERVER_NAME: TlsExtType = TlsExtType(ffi::TLSEXT_TYPE_server_name);
+
+    /// application layer protocol negotiation.
+    ///
+    /// This corresponds to `TLSEXT_TYPE_application_layer_protocol_negotiation`.
+    pub const ALPN: TlsExtType = TlsExtType(ffi::TLSEXT_TYPE_application_layer_protocol_negotiation);
+
+    /// Constructs an `TlsExtType` from a raw value.
+    pub fn from_raw(raw: c_uint) -> TlsExtType {
+        TlsExtType(raw)
+    }
+
+    /// Returns the raw value represented by this type.
+    #[allow(clippy::trivially_copy_pass_by_ref)]
+    pub fn as_raw(&self) -> c_uint {
+        self.0
+    }
+}
+
 /// An identifier of the format of a certificate or key file.
 #[derive(Copy, Clone)]
 pub struct SslFiletype(c_int);
@@ -3490,6 +3517,25 @@ impl SslRef {
             let mut ptr = ptr::null();
             let len = ffi::SSL_client_hello_get0_ciphers(self.as_ptr(), &mut ptr);
             if len == 0 {
+                None
+            } else {
+                Some(slice::from_raw_parts(ptr, len))
+            }
+        }
+    }
+
+    /// Provides access to individual extensions from the ClientHello on a per-extension basis.
+    ///
+    /// This can only be used inside of the client hello callback. Otherwise, `None` is returned.
+    ///
+    /// Requires OpenSSL 1.1.1 or newer.
+    #[cfg(ossl111)]
+    pub fn client_hello_ext(&self, ext_type: TlsExtType) -> Option<&[u8]> {
+        unsafe {
+            let mut ptr = ptr::null();
+            let mut len = 0usize;
+            let r = ffi::SSL_client_hello_get0_ext(self.as_ptr(), ext_type.as_raw() as _, &mut ptr, &mut len);
+            if r == 0 {
                 None
             } else {
                 Some(slice::from_raw_parts(ptr, len))

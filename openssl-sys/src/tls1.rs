@@ -20,6 +20,9 @@ pub const TLS1_AD_UNRECOGNIZED_NAME: c_int = 112;
 pub const TLSEXT_NAMETYPE_host_name: c_int = 0;
 pub const TLSEXT_STATUSTYPE_ocsp: c_int = 1;
 
+pub const TLSEXT_TYPE_server_name: c_uint = 0;
+pub const TLSEXT_TYPE_application_layer_protocol_negotiation: c_uint = 16;
+
 pub unsafe fn SSL_set_tlsext_host_name(s: *mut SSL, name: *mut c_char) -> c_long {
     SSL_ctrl(
         s,
