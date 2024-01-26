@@ -521,7 +521,8 @@ impl TlsExtType {
     /// application layer protocol negotiation.
     ///
     /// This corresponds to `TLSEXT_TYPE_application_layer_protocol_negotiation`.
-    pub const ALPN: TlsExtType = TlsExtType(ffi::TLSEXT_TYPE_application_layer_protocol_negotiation as _);
+    pub const ALPN: TlsExtType =
+        TlsExtType(ffi::TLSEXT_TYPE_application_layer_protocol_negotiation as _);
 
     /// Constructs an `TlsExtType` from a raw value.
     pub fn from_raw(raw: c_uint) -> TlsExtType {
@@ -3534,7 +3535,12 @@ impl SslRef {
         unsafe {
             let mut ptr = ptr::null();
             let mut len = 0usize;
-            let r = ffi::SSL_client_hello_get0_ext(self.as_ptr(), ext_type.as_raw() as _, &mut ptr, &mut len);
+            let r = ffi::SSL_client_hello_get0_ext(
+                self.as_ptr(),
+                ext_type.as_raw() as _,
+                &mut ptr,
+                &mut len,
+            );
             if r == 0 {
                 None
             } else {
