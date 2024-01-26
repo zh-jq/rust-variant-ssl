@@ -112,10 +112,15 @@ pub use crate::ssl::error::{Error, ErrorCode, HandshakeError};
 
 mod bio;
 mod callbacks;
+#[cfg(boringssl)]
+mod client_hello;
 mod connector;
 mod error;
 #[cfg(test)]
 mod test;
+
+#[cfg(boringssl)]
+pub use client_hello::ClientHello;
 
 /// Returns the OpenSSL name of a cipher corresponding to an RFC-standard cipher name.
 ///
@@ -682,6 +687,20 @@ impl ClientHelloResponse {
 
     /// Return from the handshake with an `ErrorCode::WANT_CLIENT_HELLO_CB` error.
     pub const RETRY: ClientHelloResponse = ClientHelloResponse(ffi::SSL_CLIENT_HELLO_RETRY);
+}
+
+/// An error returned from a certificate selection callback.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[cfg(boringssl)]
+pub struct SelectCertError(ffi::ssl_select_cert_result_t);
+
+#[cfg(boringssl)]
+impl SelectCertError {
+    /// A fatal error occurred and the handshake should be terminated.
+    pub const ERROR: Self = Self(ffi::ssl_select_cert_result_t_ssl_select_cert_error);
+
+    /// The operation could not be completed and should be retried later.
+    pub const RETRY: Self = Self(ffi::ssl_select_cert_result_t_ssl_select_cert_retry);
 }
 
 /// An SSL/TLS protocol version.
@@ -1931,6 +1950,29 @@ impl SslContextBuilder {
             Ok(())
         } else {
             Err(ErrorStack::get())
+        }
+    }
+
+    /// Sets a callback that is called before most ClientHello processing and before the decision whether
+    /// to resume a session is made. The callback may inspect the ClientHello and configure the
+    /// connection.
+    ///
+    /// This corresponds to [`SSL_CTX_set_select_certificate_cb`].
+    ///
+    /// [`SSL_CTX_set_select_certificate_cb`]: https://www.openssl.org/docs/man1.1.0/ssl/SSL_CTX_set_select_certificate_cb.html
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub fn set_select_certificate_callback<F>(&mut self, callback: F)
+    where
+        F: Fn(ClientHello<'_>) -> Result<(), SelectCertError> + Sync + Send + 'static,
+    {
+        unsafe {
+            self.set_ex_data(SslContext::cached_ex_index::<F>(), callback);
+            ffi::SSL_CTX_set_select_certificate_cb(
+                self.as_ptr(),
+                Some(callbacks::raw_select_cert::<F>),
+            );
         }
     }
 

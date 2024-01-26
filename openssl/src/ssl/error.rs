@@ -57,6 +57,24 @@ impl ErrorCode {
     #[cfg(ossl111)]
     pub const WANT_CLIENT_HELLO_CB: ErrorCode = ErrorCode(ffi::SSL_ERROR_WANT_CLIENT_HELLO_CB);
 
+    /// The operation failed because the early callback indicated certificate lookup was
+    /// incomplete.
+    ///
+    /// The caller may retry the operation when lookup has completed.
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub const PENDING_CERTIFICATE: ErrorCode = ErrorCode(ffi::SSL_ERROR_PENDING_CERTIFICATE);
+
+    /// The operation failed because a private key operation was unfinished.
+    ///
+    /// The caller may retry the operation when the private key operation is complete.
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub const WANT_PRIVATE_KEY_OPERATION: ErrorCode =
+        ErrorCode(ffi::SSL_ERROR_WANT_PRIVATE_KEY_OPERATION);
+
     pub fn from_raw(raw: c_int) -> ErrorCode {
         ErrorCode(raw)
     }
