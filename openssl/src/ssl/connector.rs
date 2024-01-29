@@ -268,11 +268,54 @@ impl SslAcceptor {
         Ok(SslAcceptorBuilder(ctx))
     }
 
-    /// Creates a new builder configured to connect to tlcp clients.
+    /// Creates a new builder configured to connect to tls clients using tongsuo.
     ///
     /// Requires Tongsuo.
     #[cfg(tongsuo)]
-    pub fn tlcp() -> Result<SslAcceptorBuilder, ErrorStack> {
+    pub fn tongsuo_auto() -> Result<SslAcceptorBuilder, ErrorStack> {
+        let mut ctx = ctx(SslMethod::ntls_server())?;
+        ctx.enable_ntls();
+        ctx.set_options(SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1);
+        setup_dh_params(&mut ctx)?;
+        ctx.set_groups_list("X25519:P-256:P-384")?;
+        ctx.set_cipher_list(
+            "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:\
+             ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:\
+             DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305:\
+             ECDHE-SM2-SM4-CBC-SM3:ECDHE-SM2-SM4-GCM-SM3:ECC-SM2-SM4-CBC-SM3:ECC-SM2-SM4-GCM-SM3:\
+             RSA-SM4-CBC-SM3:RSA-SM4-GCM-SM3:RSA-SM4-CBC-SHA256:RSA-SM4-GCM-SHA256",
+        )?;
+        ctx.set_ciphersuites(
+            "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_SM4_GCM_SM3",
+        )?;
+        Ok(SslAcceptorBuilder(ctx))
+    }
+
+    /// Creates a new builder configured to connect to tls clients using tongsuo.
+    ///
+    /// Requires Tongsuo.
+    #[cfg(tongsuo)]
+    pub fn tongsuo_tls() -> Result<SslAcceptorBuilder, ErrorStack> {
+        let mut ctx = ctx(SslMethod::tls_server())?;
+        ctx.set_options(SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1);
+        setup_dh_params(&mut ctx)?;
+        ctx.set_groups_list("X25519:P-256:P-384")?;
+        ctx.set_cipher_list(
+            "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:\
+             ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:\
+             DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305"
+        )?;
+        ctx.set_ciphersuites(
+            "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_SM4_GCM_SM3",
+        )?;
+        Ok(SslAcceptorBuilder(ctx))
+    }
+
+    /// Creates a new builder configured to connect to tlcp clients using tongsuo.
+    ///
+    /// Requires Tongsuo.
+    #[cfg(tongsuo)]
+    pub fn tongsuo_tlcp() -> Result<SslAcceptorBuilder, ErrorStack> {
         let mut ctx = ctx(SslMethod::ntls_server())?;
         ctx.enable_force_ntls();
         // the EC curves should always be SM2
