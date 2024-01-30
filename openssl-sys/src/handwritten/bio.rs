@@ -54,6 +54,7 @@ extern "C" {
     pub fn BIO_method_name(b: *const BIO) -> *const c_char;
     pub fn BIO_method_type(b: *const BIO) -> c_int;
     pub fn BIO_find_type(b: *mut BIO, bio_type: c_int) -> *mut BIO;
+    pub fn BIO_next(b: *mut BIO) -> *mut BIO;
 }
 
 const_ptr_api! {

@@ -54,11 +54,15 @@ pub fn new<S: Read + Write>(stream: S) -> Result<(*mut BIO, BioMethod), ErrorSta
 
 #[cfg(feature = "tongsuo")]
 pub unsafe fn find_correct_bio(bio: *mut BIO) -> *mut BIO {
-    let bio = ffi::BIO_find_type(bio, ffi::BIO_TYPE_NONE);
-    if bio.is_null() {
-        panic!("can not found the correct BIO");
+    if ffi::BIO_method_type(bio) == ffi::BIO_TYPE_NONE {
+        return bio;
     }
-    bio
+    // use BIO_next here, as BIO_find_type(BIO_TYPE_NONE) doesn't work
+    let next_bio = ffi::BIO_next(bio);
+    if next_bio.is_null() {
+        panic!("can not found the next correct BIO");
+    }
+    next_bio
 }
 
 pub unsafe fn take_error<S>(bio: *mut BIO) -> Option<io::Error> {
