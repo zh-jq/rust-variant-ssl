@@ -273,7 +273,7 @@ impl SslAcceptor {
     /// Requires Tongsuo.
     #[cfg(tongsuo)]
     pub fn tongsuo_auto() -> Result<SslAcceptorBuilder, ErrorStack> {
-        let mut ctx = ctx(SslMethod::ntls_server())?;
+        let mut ctx = ctx(SslMethod::tls_server())?;
         ctx.enable_ntls();
         ctx.set_options(SslOptions::NO_TLSV1 | SslOptions::NO_TLSV1_1);
         setup_dh_params(&mut ctx)?;
