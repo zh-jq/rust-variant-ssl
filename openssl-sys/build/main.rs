@@ -68,7 +68,7 @@ fn find_openssl(target: &str) -> (Vec<PathBuf>, PathBuf) {
     }
     #[cfg(feature = "aws-lc")]
     {
-        if let Ok(dir) = env::var("DEP_AWS_LC_0_12_1_INCLUDE") {
+        if let Ok(dir) = env::var("DEP_AWS_LC_0_13_0_INCLUDE") {
             return (Vec::new(), PathBuf::from(dir));
         }
     }
