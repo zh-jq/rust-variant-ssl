@@ -50,6 +50,12 @@ extern "C" {
     pub fn BIO_free_all(b: *mut BIO);
 }
 
+extern "C" {
+    pub fn BIO_method_name(b: *const BIO) -> *const c_char;
+    pub fn BIO_method_type(b: *const BIO) -> c_int;
+    pub fn BIO_find_type(b: *mut BIO, bio_type: c_int) -> *mut BIO;
+}
+
 const_ptr_api! {
     extern "C" {
         pub fn BIO_s_mem() -> #[const_ptr_if(any(ossl110, libressl280))] BIO_METHOD;

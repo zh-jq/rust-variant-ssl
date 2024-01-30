@@ -2667,8 +2667,17 @@ impl fmt::Debug for SslRef {
 }
 
 impl SslRef {
+    #[cfg(not(feature = "tongsuo"))]
     fn get_raw_rbio(&self) -> *mut ffi::BIO {
         unsafe { ffi::SSL_get_rbio(self.as_ptr()) }
+    }
+
+    #[cfg(feature = "tongsuo")]
+    fn get_raw_rbio(&self) -> *mut ffi::BIO {
+        unsafe {
+            let bio = ffi::SSL_get_rbio(self.as_ptr());
+            bio::find_correct_bio(bio)
+        }
     }
 
     fn get_error(&self, ret: c_int) -> ErrorCode {

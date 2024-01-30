@@ -52,6 +52,15 @@ pub fn new<S: Read + Write>(stream: S) -> Result<(*mut BIO, BioMethod), ErrorSta
     }
 }
 
+#[cfg(feature = "tongsuo")]
+pub unsafe fn find_correct_bio(bio: *mut BIO) -> *mut BIO {
+    let bio = ffi::BIO_find_type(bio, ffi::BIO_TYPE_NONE);
+    if bio.is_null() {
+        panic!("can not found the correct BIO");
+    }
+    bio
+}
+
 pub unsafe fn take_error<S>(bio: *mut BIO) -> Option<io::Error> {
     let state = state::<S>(bio);
     state.error.take()
