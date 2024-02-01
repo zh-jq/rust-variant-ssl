@@ -711,8 +711,9 @@ pub struct SslCtValidationMode(c_int);
 #[cfg(ossl111)]
 impl SslCtValidationMode {
     pub const PERMISSIVE: SslCtValidationMode =
-        SslCtValidationMode(ffi::SSL_CT_VALIDATION_PERMISSIVE);
-    pub const STRICT: SslCtValidationMode = SslCtValidationMode(ffi::SSL_CT_VALIDATION_STRICT);
+        SslCtValidationMode(ffi::SSL_CT_VALIDATION_PERMISSIVE as c_int);
+    pub const STRICT: SslCtValidationMode =
+        SslCtValidationMode(ffi::SSL_CT_VALIDATION_STRICT as c_int);
 }
 
 /// An SSL/TLS protocol version.
