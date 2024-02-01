@@ -1586,6 +1586,42 @@ impl SslContextBuilder {
         unsafe { X509VerifyParamRef::from_ptr_mut(ffi::SSL_CTX_get0_param(self.as_ptr())) }
     }
 
+    /// Enables OCSP stapling on all client SSL objects created from ctx
+    ///
+    /// This corresponds to [`SSL_CTX_enable_ocsp_stapling`].
+    ///
+    /// [`SSL_CTX_enable_ocsp_stapling`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_enable_ocsp_stapling
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub fn enable_ocsp_stapling(&mut self) {
+        unsafe { ffi::SSL_CTX_enable_ocsp_stapling(self.as_ptr()) }
+    }
+
+    /// Enables SCT requests on all client SSL objects created from ctx
+    ///
+    /// This corresponds to [`SSL_CTX_enable_signed_cert_timestamps`].
+    ///
+    /// [`SSL_CTX_enable_signed_cert_timestamps`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_enable_signed_cert_timestamps
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub fn enable_signed_cert_timestamps(&mut self) {
+        unsafe { ffi::SSL_CTX_enable_signed_cert_timestamps(self.as_ptr()) }
+    }
+
+    /// Set whether to enable GREASE on all client SSL objects created from ctx
+    ///
+    /// This corresponds to [`SSL_CTX_set_grease_enabled`].
+    ///
+    /// [`SSL_CTX_set_grease_enabled`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_set_grease_enabled
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub fn set_grease_enabled(&mut self, enabled: bool) {
+        unsafe { ffi::SSL_CTX_set_grease_enabled(self.as_ptr(), enabled as c_int) }
+    }
+
     /// Sets the status response a client wishes the server to reply with.
     #[corresponds(SSL_CTX_set_tlsext_status_type)]
     #[cfg(not(boringssl))]
@@ -1593,15 +1629,6 @@ impl SslContextBuilder {
         unsafe {
             cvt(ffi::SSL_CTX_set_tlsext_status_type(self.as_ptr(), type_.as_raw()) as c_int)
                 .map(|_| ())
-        }
-    }
-
-    /// Enables OCSP stapling on all client SSL objects created from ctx
-    #[corresponds(SSL_CTX_enable_ocsp_stapling)]
-    #[cfg(boringssl)]
-    pub fn enable_ocsp_stapling(&mut self) {
-        unsafe {
-            ffi::SSL_CTX_enable_ocsp_stapling(self.as_ptr());
         }
     }
 
@@ -1959,7 +1986,7 @@ impl SslContextBuilder {
     ///
     /// This corresponds to [`SSL_CTX_set_select_certificate_cb`].
     ///
-    /// [`SSL_CTX_set_select_certificate_cb`]: https://www.openssl.org/docs/man1.1.0/ssl/SSL_CTX_set_select_certificate_cb.html
+    /// [`SSL_CTX_set_select_certificate_cb`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_set_select_certificate_cb
     ///
     /// Requires BoringSSL.
     #[cfg(boringssl)]
@@ -3298,12 +3325,27 @@ impl SslRef {
     }
 
     /// Causes ssl (which must be the client end of a connection) to request a stapled OCSP response from the server
-    #[corresponds(SSL_enable_ocsp_stapling)]
+    ///
+    /// This corresponds to [`SSL_enable_ocsp_stapling`].
+    ///
+    /// [`SSL_enable_ocsp_stapling`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_enable_ocsp_stapling
+    ///
+    /// Requires BoringSSL.
     #[cfg(boringssl)]
     pub fn enable_ocsp_stapling(&mut self) {
-        unsafe {
-            ffi::SSL_enable_ocsp_stapling(self.as_ptr());
-        }
+        unsafe { ffi::SSL_enable_ocsp_stapling(self.as_ptr()) }
+    }
+
+    /// Causes ssl (which must be the client end of a connection) to request SCTs from the server
+    ///
+    /// This corresponds to [`SSL_enable_signed_cert_timestamps`].
+    ///
+    /// [`SSL_enable_signed_cert_timestamps`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_enable_signed_cert_timestamps
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub fn enable_signed_cert_timestamps(&mut self) {
+        unsafe { ffi::SSL_enable_signed_cert_timestamps(self.as_ptr()) }
     }
 
     /// Determines if current session used Extended Master Secret
