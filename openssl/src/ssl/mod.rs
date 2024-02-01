@@ -703,6 +703,18 @@ impl SelectCertError {
     pub const RETRY: Self = Self(ffi::ssl_select_cert_result_t_ssl_select_cert_retry);
 }
 
+/// SSL CT validation mode.
+#[cfg(ossl111)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct SslCtValidationMode(c_int);
+
+#[cfg(ossl111)]
+impl SslCtValidationMode {
+    pub const PERMISSIVE: SslCtValidationMode =
+        SslCtValidationMode(ffi::SSL_CT_VALIDATION_PERMISSIVE);
+    pub const STRICT: SslCtValidationMode = SslCtValidationMode(ffi::SSL_CT_VALIDATION_STRICT);
+}
+
 /// An SSL/TLS protocol version.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SslVersion(c_int);
@@ -1620,6 +1632,27 @@ impl SslContextBuilder {
     #[cfg(boringssl)]
     pub fn set_grease_enabled(&mut self, enabled: bool) {
         unsafe { ffi::SSL_CTX_set_grease_enabled(self.as_ptr(), enabled as c_int) }
+    }
+
+    /// Enable the processing of signed certificate timestamps (SCTs) for all connections that share the given SSL context.
+    #[corresponds(SSL_CTX_enable_ct)]
+    #[cfg(ossl111)]
+    pub fn enable_ct(&mut self, validation_mode: SslCtValidationMode) -> Result<(), ErrorStack> {
+        unsafe { cvt(ffi::SSL_CTX_enable_ct(self.as_ptr(), validation_mode.0)).map(|_| ()) }
+    }
+
+    /// Check whether CT processing is enabled.
+    #[corresponds(SSL_CTX_ct_is_enabled)]
+    #[cfg(ossl111)]
+    pub fn ct_is_enabled(&self) -> bool {
+        unsafe {
+            let r = ffi::SSL_CTX_ct_is_enabled(self.as_ptr());
+            if r == 1 {
+                true
+            } else {
+                false
+            }
+        }
     }
 
     /// Sets the status response a client wishes the server to reply with.
@@ -3316,14 +3349,6 @@ impl SslRef {
         unsafe { ffi::SSL_session_reused(self.as_ptr()) != 0 }
     }
 
-    /// Sets the status response a client wishes the server to reply with.
-    #[corresponds(SSL_set_tlsext_status_type)]
-    pub fn set_status_type(&mut self, type_: StatusType) -> Result<(), ErrorStack> {
-        unsafe {
-            cvt(ffi::SSL_set_tlsext_status_type(self.as_ptr(), type_.as_raw()) as c_int).map(|_| ())
-        }
-    }
-
     /// Causes ssl (which must be the client end of a connection) to request a stapled OCSP response from the server
     ///
     /// This corresponds to [`SSL_enable_ocsp_stapling`].
@@ -3346,6 +3371,35 @@ impl SslRef {
     #[cfg(boringssl)]
     pub fn enable_signed_cert_timestamps(&mut self) {
         unsafe { ffi::SSL_enable_signed_cert_timestamps(self.as_ptr()) }
+    }
+
+    /// Enable the processing of signed certificate timestamps (SCTs) for the given SSL connection.
+    #[corresponds(SSL_enable_ct)]
+    #[cfg(ossl111)]
+    pub fn enable_ct(&mut self, validation_mode: SslCtValidationMode) -> Result<(), ErrorStack> {
+        unsafe { cvt(ffi::SSL_enable_ct(self.as_ptr(), validation_mode.0)).map(|_| ()) }
+    }
+
+    /// Check whether CT processing is enabled.
+    #[corresponds(SSL_ct_is_enabled)]
+    #[cfg(ossl111)]
+    pub fn ct_is_enabled(&self) -> bool {
+        unsafe {
+            let r = ffi::SSL_ct_is_enabled(self.as_ptr());
+            if r == 1 {
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    /// Sets the status response a client wishes the server to reply with.
+    #[corresponds(SSL_set_tlsext_status_type)]
+    pub fn set_status_type(&mut self, type_: StatusType) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::SSL_set_tlsext_status_type(self.as_ptr(), type_.as_raw()) as c_int).map(|_| ())
+        }
     }
 
     /// Determines if current session used Extended Master Secret

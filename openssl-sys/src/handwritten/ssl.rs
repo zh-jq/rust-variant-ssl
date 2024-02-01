@@ -994,3 +994,11 @@ extern "C" {
     #[cfg(any(ossl110, libressl360))]
     pub fn SSL_get_security_level(s: *const SSL) -> c_int;
 }
+
+#[cfg(ossl111)]
+extern "C" {
+    pub fn SSL_enable_ct(s: *mut SSL, validation_mode: c_int) -> c_int;
+    pub fn SSL_CTX_enable_ct(ctx: *mut SSL_CTX, validation_mode: c_int) -> c_int;
+    pub fn SSL_ct_is_enabled(s: *const SSL) -> c_int;
+    pub fn SSL_CTX_ct_is_enabled(ctx: *const SSL_CTX) -> c_int;
+}

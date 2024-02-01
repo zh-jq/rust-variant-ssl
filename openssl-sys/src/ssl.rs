@@ -680,3 +680,8 @@ pub unsafe fn SSL_session_reused(ssl: *mut SSL) -> c_int {
 pub const OPENSSL_INIT_LOAD_SSL_STRINGS: u64 = 0x00200000;
 #[cfg(ossl111b)]
 pub const OPENSSL_INIT_NO_ATEXIT: u64 = 0x00080000;
+
+#[cfg(ossl111)]
+pub const SSL_CT_VALIDATION_PERMISSIVE: c_int = 0;
+#[cfg(ossl111)]
+pub const SSL_CT_VALIDATION_STRICT: c_int = 1;
