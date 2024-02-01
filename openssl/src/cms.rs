@@ -281,10 +281,10 @@ impl CmsContentInfo {
 mod test {
     use super::*;
 
-    #[cfg(not(tongsuo))]
+    #[cfg(not(any(tongsuo, feature = "vendored")))]
     use crate::pkcs12::Pkcs12;
     use crate::pkey::PKey;
-    #[cfg(not(tongsuo))]
+    #[cfg(not(any(tongsuo, feature = "vendored")))]
     use crate::stack::Stack;
     use crate::x509::{
         store::{X509Store, X509StoreBuilder},
@@ -292,7 +292,7 @@ mod test {
     };
 
     #[test]
-    #[cfg(not(tongsuo))]
+    #[cfg(not(any(tongsuo, feature = "vendored")))]
     fn cms_encrypt_decrypt() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
@@ -434,7 +434,7 @@ mod test {
     }
 
     #[test]
-    #[cfg(not(tongsuo))]
+    #[cfg(not(any(tongsuo, feature = "vendored")))]
     fn cms_sign_verify_error() {
         #[cfg(ossl300)]
         let _provider = crate::provider::Provider::try_load(None, "legacy", true).unwrap();
