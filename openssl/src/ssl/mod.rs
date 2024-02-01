@@ -1646,14 +1646,7 @@ impl SslContextBuilder {
     #[corresponds(SSL_CTX_ct_is_enabled)]
     #[cfg(ossl111)]
     pub fn ct_is_enabled(&self) -> bool {
-        unsafe {
-            let r = ffi::SSL_CTX_ct_is_enabled(self.as_ptr());
-            if r == 1 {
-                true
-            } else {
-                false
-            }
-        }
+        unsafe { ffi::SSL_CTX_ct_is_enabled(self.as_ptr()) == 1 }
     }
 
     /// Sets the status response a client wishes the server to reply with.
@@ -3385,14 +3378,7 @@ impl SslRef {
     #[corresponds(SSL_ct_is_enabled)]
     #[cfg(ossl111)]
     pub fn ct_is_enabled(&self) -> bool {
-        unsafe {
-            let r = ffi::SSL_ct_is_enabled(self.as_ptr());
-            if r == 1 {
-                true
-            } else {
-                false
-            }
-        }
+        unsafe { ffi::SSL_ct_is_enabled(self.as_ptr()) == 1 }
     }
 
     /// Sets the status response a client wishes the server to reply with.
