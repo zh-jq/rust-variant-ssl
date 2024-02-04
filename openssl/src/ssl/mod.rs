@@ -1623,7 +1623,7 @@ impl SslContextBuilder {
         decompress: F,
     ) -> Result<(), ErrorStack>
     where
-        F: Fn(&mut SslRef, &[u8], &mut [u8]) -> usize + Send + Sync + 'static,
+        F: Fn(&[u8], &mut [u8]) -> usize + Send + Sync + 'static,
     {
         unsafe {
             self.set_ex_data(SslContext::cached_ex_index::<F>(), decompress);
