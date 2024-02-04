@@ -738,7 +738,7 @@ pub(super) unsafe extern "C" fn raw_cert_decompression<F>(
     in_len: usize,
 ) -> c_int
 where
-    F: Fn(&mut SslRef, &[u8], &mut [u8]) -> bool + Sync + Send + 'static,
+    F: Fn(&mut SslRef, &[u8], &mut [u8]) -> usize + Sync + Send + 'static,
 {
     let ssl = SslRef::from_ptr_mut(ssl);
     let in_buf = slice::from_raw_parts(in_, in_len);
@@ -754,12 +754,12 @@ where
         .ex_data(SslContext::cached_ex_index::<F>())
         .expect("BUG: select cert callback missing");
 
-    match callback(ssl, in_buf, out_buf) {
-        true => {
-            *out = decompressed;
-            1
-        }
-        false => 0,
+    let decompressed_len = callback(ssl, in_buf, out_buf);
+    if decompressed_len == uncompressed_len {
+        *out = decompressed;
+        1
+    } else {
+        0
     }
 }
 
@@ -772,7 +772,7 @@ pub(super) unsafe extern "C" fn raw_cert_decompression<F>(
     uncompressed_len: usize,
 ) -> c_int
 where
-    F: Fn(&mut SslRef, &[u8], &mut [u8]) -> bool + Sync + Send + 'static,
+    F: Fn(&mut SslRef, &[u8], &mut [u8]) -> usize + Sync + Send + 'static,
 {
     let ssl = SslRef::from_ptr_mut(ssl);
     let in_buf = slice::from_raw_parts(in_, in_len);
@@ -783,8 +783,10 @@ where
         .ex_data(SslContext::cached_ex_index::<F>())
         .expect("BUG: select cert callback missing");
 
-    match callback(ssl, in_buf, out_buf) {
-        true => 1,
-        false => 0,
+    let decompressed_len = callback(ssl, in_buf, out_buf);
+    if decompressed_len == uncompressed_len {
+        1
+    } else {
+        0
     }
 }
