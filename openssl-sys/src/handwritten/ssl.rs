@@ -1002,3 +1002,53 @@ extern "C" {
     pub fn SSL_ct_is_enabled(s: *const SSL) -> c_int;
     pub fn SSL_CTX_ct_is_enabled(ctx: *const SSL_CTX) -> c_int;
 }
+
+#[cfg(ossl320)]
+extern "C" {
+    pub fn SSL_CTX_compress_certs(ctx: *mut SSL_CTX, alg: c_int) -> c_int;
+    pub fn SSL_compress_certs(ssl: *mut SSL, alg: c_int) -> c_int;
+    pub fn SSL_CTX_set1_cert_comp_preference(
+        ctx: *mut SSL_CTX,
+        algs: *mut c_int,
+        len: usize,
+    ) -> c_int;
+    pub fn SSL_set1_cert_comp_preference(ssl: *mut SSL, algs: *mut c_int, len: usize) -> c_int;
+}
+
+#[cfg(tongsuo)]
+pub type SSL_cert_compress_cb_fn = Option<
+    unsafe extern "C" fn(
+        s: *mut SSL,
+        in_: *const c_uchar,
+        inlen: usize,
+        out: *mut c_uchar,
+        outlen: *mut usize,
+    ) -> c_int,
+>;
+#[cfg(tongsuo)]
+pub type SSL_cert_decompress_cb_fn = Option<
+    unsafe extern "C" fn(
+        s: *mut SSL,
+        in_: *const c_uchar,
+        inlen: usize,
+        out: *mut c_uchar,
+        outlen: usize,
+    ) -> c_int,
+>;
+#[cfg(tongsuo)]
+extern "C" {
+    pub fn SSL_get_cert_compression_compress_id(s: *mut SSL) -> c_int;
+    pub fn SSL_get_cert_compression_decompress_id(s: *mut SSL) -> c_int;
+    pub fn SSL_add_cert_compression_alg(
+        s: *mut SSL,
+        alg_id: c_int,
+        compress: SSL_cert_compress_cb_fn,
+        decompress: SSL_cert_decompress_cb_fn,
+    ) -> c_int;
+    pub fn SSL_CTX_add_cert_compression_alg(
+        ctx: *mut SSL_CTX,
+        alg_id: c_int,
+        compress: SSL_cert_compress_cb_fn,
+        decompress: SSL_cert_decompress_cb_fn,
+    ) -> c_int;
+}

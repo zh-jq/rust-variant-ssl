@@ -728,3 +728,63 @@ where
         Err(e) => e.0,
     }
 }
+
+#[cfg(boringssl)]
+pub(super) unsafe extern "C" fn raw_cert_decompression<F>(
+    ssl: *mut ffi::SSL,
+    out: *mut *mut ffi::CRYPTO_BUFFER,
+    uncompressed_len: usize,
+    in_: *const u8,
+    in_len: usize,
+) -> c_int
+where
+    F: Fn(&mut SslRef, &[u8], &mut [u8]) -> bool + Sync + Send + 'static,
+{
+    let ssl = SslRef::from_ptr_mut(ssl);
+    let in_buf = slice::from_raw_parts(in_, in_len);
+    let mut out_ptr = ptr::null_mut::<u8>();
+    let decompressed = ffi::CRYPTO_BUFFER_alloc(&mut out_ptr, uncompressed_len);
+    if decompressed.is_null() {
+        return 0;
+    }
+    let out_buf = slice::from_raw_parts_mut(out_ptr, uncompressed_len);
+
+    let ssl_context = ssl.ssl_context().to_owned();
+    let callback = ssl_context
+        .ex_data(SslContext::cached_ex_index::<F>())
+        .expect("BUG: select cert callback missing");
+
+    match callback(ssl, in_buf, out_buf) {
+        true => {
+            *out = decompressed;
+            1
+        }
+        false => 0,
+    }
+}
+
+#[cfg(tongsuo)]
+pub(super) unsafe extern "C" fn raw_cert_decompression<F>(
+    ssl: *mut ffi::SSL,
+    in_: *const u8,
+    in_len: usize,
+    out: *mut u8,
+    uncompressed_len: usize,
+) -> c_int
+where
+    F: Fn(&mut SslRef, &[u8], &mut [u8]) -> bool + Sync + Send + 'static,
+{
+    let ssl = SslRef::from_ptr_mut(ssl);
+    let in_buf = slice::from_raw_parts(in_, in_len);
+    let out_buf = slice::from_raw_parts_mut(out, uncompressed_len);
+
+    let ssl_context = ssl.ssl_context().to_owned();
+    let callback = ssl_context
+        .ex_data(SslContext::cached_ex_index::<F>())
+        .expect("BUG: select cert callback missing");
+
+    match callback(ssl, in_buf, out_buf) {
+        true => 1,
+        false => 0,
+    }
+}

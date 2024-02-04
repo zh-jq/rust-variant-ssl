@@ -716,6 +716,16 @@ impl SslCtValidationMode {
         SslCtValidationMode(ffi::SSL_CT_VALIDATION_STRICT as c_int);
 }
 
+/// TLS Certificate Compression Algorithm IDs, defined by IANA
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct CertCompressionAlgorithm(c_int);
+
+impl CertCompressionAlgorithm {
+    pub const ZLIB: CertCompressionAlgorithm = CertCompressionAlgorithm(1);
+    pub const BROTLI: CertCompressionAlgorithm = CertCompressionAlgorithm(2);
+    pub const ZSTD: CertCompressionAlgorithm = CertCompressionAlgorithm(3);
+}
+
 /// An SSL/TLS protocol version.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SslVersion(c_int);
@@ -1597,6 +1607,52 @@ impl SslContextBuilder {
     #[cfg(any(ossl102, boringssl, libressl261))]
     pub fn verify_param_mut(&mut self) -> &mut X509VerifyParamRef {
         unsafe { X509VerifyParamRef::from_ptr_mut(ffi::SSL_CTX_get0_param(self.as_ptr())) }
+    }
+
+    /// Registers a certificate decompression algorithm on ctx with ID alg_id.
+    ///
+    /// This corresponds to [`SSL_CTX_add_cert_compression_alg`].
+    ///
+    /// [`SSL_CTX_add_cert_compression_alg`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_add_cert_compression_alg
+    ///
+    /// Requires BoringSSL or Tongsuo.
+    #[cfg(any(boringssl, tongsuo))]
+    pub fn add_cert_decompression_alg<F>(
+        &mut self,
+        alg_id: CertCompressionAlgorithm,
+        decompress: F,
+    ) -> Result<(), ErrorStack>
+    where
+        F: Fn(&mut SslRef, &[u8], &mut [u8]) -> bool + Send + Sync + 'static,
+    {
+        unsafe {
+            self.set_ex_data(SslContext::cached_ex_index::<F>(), decompress);
+            cvt(ffi::SSL_CTX_add_cert_compression_alg(
+                self.as_ptr(),
+                alg_id.0 as _,
+                None,
+                Some(raw_cert_decompression::<F>),
+            ))
+            .map(|_| ())
+        }
+    }
+
+    /// Specify the preferred cert compression algorithms
+    #[corresponds(SSL_CTX_set1_cert_comp_preference)]
+    #[cfg(ossl320)]
+    pub fn set_cert_comp_preference(
+        &mut self,
+        algs: &[CertCompressionAlgorithm],
+    ) -> Result<(), ErrorStack> {
+        let mut algs = algs.iter().map(|v| v.0).collect::<Vec<c_int>>();
+        unsafe {
+            cvt(ffi::SSL_CTX_set1_cert_comp_preference(
+                self.as_ptr(),
+                algs.as_mut_ptr(),
+                algs.len(),
+            ))
+            .map(|_| ())
+        }
     }
 
     /// Enables OCSP stapling on all client SSL objects created from ctx
