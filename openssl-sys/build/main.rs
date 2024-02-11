@@ -11,7 +11,7 @@ extern crate vcpkg;
 use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 mod cfgs;
 
 mod find_normal;
@@ -98,11 +98,14 @@ fn main() {
     let target = env::var("TARGET").unwrap();
 
     let (lib_dirs, include_dir) = find_openssl(&target);
+    if let Some(printable_include) = include_dir.join("openssl").to_str() {
+        println!("cargo:rerun-if-changed={}", printable_include);
+    }
 
-    if !lib_dirs.iter().all(|p| Path::new(p).exists()) {
+    if !lib_dirs.iter().all(|p| p.exists()) {
         panic!("OpenSSL library directory does not exist: {:?}", lib_dirs);
     }
-    if !Path::new(&include_dir).exists() {
+    if !include_dir.exists() {
         panic!(
             "OpenSSL include directory does not exist: {}",
             include_dir.to_string_lossy()
