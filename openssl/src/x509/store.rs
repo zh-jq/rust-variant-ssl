@@ -50,11 +50,12 @@ use crate::error::ErrorStack;
 use crate::ssl::SslFiletype;
 #[cfg(ossl300)]
 use crate::stack::Stack;
-use crate::stack::StackRef;
 use crate::util::ForeignTypeRefExt;
 #[cfg(any(ossl102, boringssl, libressl261))]
 use crate::x509::verify::{X509VerifyFlags, X509VerifyParamRef};
-use crate::x509::{X509Object, X509PurposeId, X509};
+#[cfg(any(ossl330, bssl_google))]
+use crate::x509::X509Object;
+use crate::x509::{X509PurposeId, X509};
 use crate::{cvt, cvt_p};
 use openssl_macros::corresponds;
 #[cfg(not(boringssl))]
@@ -266,7 +267,7 @@ impl X509StoreRef {
     ///
     /// The cache contains X509 and X509_CRL objects.
     #[corresponds(X509_STORE_get1_objects)]
-    #[cfg(any(ossl330, boringssl))]
+    #[cfg(any(ossl330, bssl_google))]
     pub fn objects(&self) -> Stack<X509Object> {
         unsafe { Stack::from_ptr(ffi::X509_STORE_get1_objects(self.as_ptr())) }
     }
