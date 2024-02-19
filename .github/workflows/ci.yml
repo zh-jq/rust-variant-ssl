@@ -190,9 +190,6 @@ jobs:
             - target: arm-unknown-linux-gnueabihf
               library:
                 name: aws-lc
-            - target: i686-unknown-linux-gnu
-              library:
-                name: boringssl
       name: ${{ matrix.target }}-${{ matrix.library.name }}-${{ matrix.library.version }}-${{ matrix.bindgen }}
       runs-on: ubuntu-latest
       env:
@@ -257,7 +254,7 @@ jobs:
               ;;
             "i686-unknown-linux-gnu")
               OS_COMPILER=linux-elf
-              OS_FLAGS=-m32
+              OS_FLAGS="-m32 -msse2"
               ;;
             "arm-unknown-linux-gnueabihf")
               OS_COMPILER=linux-armv4
