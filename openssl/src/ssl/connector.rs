@@ -317,6 +317,8 @@ impl SslAcceptor {
     #[cfg(tongsuo)]
     pub fn tongsuo_tlcp() -> Result<SslAcceptorBuilder, ErrorStack> {
         let mut ctx = ctx(SslMethod::ntls_server())?;
+        ctx.enable_ntls();
+        #[cfg(ossl300)]
         ctx.enable_force_ntls();
         // the EC curves should always be SM2
         ctx.set_cipher_list(

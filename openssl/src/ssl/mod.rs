@@ -852,13 +852,13 @@ impl SslContextBuilder {
         unsafe { ffi::SSL_CTX_disable_ntls(self.as_ptr()) }
     }
 
-    #[cfg(tongsuo)]
+    #[cfg(all(tongsuo, ossl300))]
     #[corresponds(SSL_CTX_enable_force_ntls)]
     pub fn enable_force_ntls(&mut self) {
         unsafe { ffi::SSL_CTX_enable_force_ntls(self.as_ptr()) }
     }
 
-    #[cfg(tongsuo)]
+    #[cfg(all(tongsuo, ossl300))]
     #[corresponds(SSL_CTX_disable_force_ntls)]
     pub fn disable_force_ntls(&mut self) {
         unsafe { ffi::SSL_CTX_disable_force_ntls(self.as_ptr()) }
@@ -2853,13 +2853,13 @@ impl SslRef {
         unsafe { ffi::SSL_disable_ntls(self.as_ptr()) }
     }
 
-    #[cfg(tongsuo)]
+    #[cfg(all(tongsuo, ossl300))]
     #[corresponds(SSL_enable_force_ntls)]
     pub fn enable_force_ntls(&mut self) {
         unsafe { ffi::SSL_enable_force_ntls(self.as_ptr()) }
     }
 
-    #[cfg(tongsuo)]
+    #[cfg(all(tongsuo, ossl300))]
     #[corresponds(SSL_disable_force_ntls)]
     pub fn disable_force_ntls(&mut self) {
         unsafe { ffi::SSL_disable_force_ntls(self.as_ptr()) }
