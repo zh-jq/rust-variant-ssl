@@ -148,7 +148,7 @@ jobs:
             - name: tongsuo
               version: vendored
             - name: boringssl
-              version: 99e8c6e2a383a25679c3d6767702732b27bc16ea
+              version: 0568c2c1dbff4e1de4d5a63fbaf7d13925df27fa
             - name: aws-lc
               version: vendored
             - name: openssl
