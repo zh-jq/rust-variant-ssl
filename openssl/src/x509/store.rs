@@ -262,17 +262,13 @@ foreign_type_and_impl_send_sync! {
 }
 
 impl X509StoreRef {
-    /// Get a reference to the cache of certificates in this store.
+    /// Returns a snapshot of all objects in the store's X509 cache.
     ///
-    /// This method is deprecated. It is **unsound** and will be removed in a
-    /// future version of rust-openssl. `X509StoreRef::all_certificates`
-    /// should be used instead.
-    #[deprecated(
-        note = "This method is unsound, and will be removed in a future version of rust-openssl. X509StoreRef::all_certificates should be used instead."
-    )]
-    #[corresponds(X509_STORE_get0_objects)]
-    pub fn objects(&self) -> &StackRef<X509Object> {
-        unsafe { StackRef::from_ptr(X509_STORE_get0_objects(self.as_ptr())) }
+    /// The cache contains X509 and X509_CRL objects.
+    #[corresponds(X509_STORE_get1_objects)]
+    #[cfg(any(ossl330, boringssl))]
+    pub fn objects(&self) -> Stack<X509Object> {
+        unsafe { Stack::from_ptr(ffi::X509_STORE_get1_objects(self.as_ptr())) }
     }
 
     /// Returns a stack of all the certificates in this store.
@@ -280,17 +276,6 @@ impl X509StoreRef {
     #[cfg(ossl300)]
     pub fn all_certificates(&self) -> Stack<X509> {
         unsafe { Stack::from_ptr(ffi::X509_STORE_get1_all_certs(self.as_ptr())) }
-    }
-}
-
-cfg_if! {
-    if #[cfg(any(boringssl, ossl110, libressl270))] {
-        use ffi::X509_STORE_get0_objects;
-    } else {
-        #[allow(bad_style)]
-        unsafe fn X509_STORE_get0_objects(x: *mut ffi::X509_STORE) -> *mut ffi::stack_st_X509_OBJECT {
-            (*x).objs
-        }
     }
 }
 

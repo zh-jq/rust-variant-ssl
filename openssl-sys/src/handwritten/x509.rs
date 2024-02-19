@@ -718,6 +718,8 @@ const_ptr_api! {
     extern "C" {
         #[cfg(any(ossl110, libressl270))]
         pub fn X509_STORE_get0_objects(ctx: #[const_ptr_if(ossl300)] X509_STORE) -> *mut stack_st_X509_OBJECT;
+        #[cfg(ossl330)]
+        pub fn X509_STORE_get1_objects(ctx: *mut X509_STORE) -> *mut stack_st_X509_OBJECT;
         #[cfg(ossl300)]
         pub fn X509_STORE_get1_all_certs(ctx: *mut X509_STORE) -> *mut stack_st_X509;
     }
