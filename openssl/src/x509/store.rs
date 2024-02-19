@@ -48,7 +48,7 @@ use std::mem;
 use crate::error::ErrorStack;
 #[cfg(not(boringssl))]
 use crate::ssl::SslFiletype;
-#[cfg(ossl300)]
+#[cfg(any(ossl300, bssl_google))]
 use crate::stack::Stack;
 use crate::util::ForeignTypeRefExt;
 #[cfg(any(ossl102, boringssl, libressl261))]
