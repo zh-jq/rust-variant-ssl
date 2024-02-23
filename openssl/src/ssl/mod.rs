@@ -1544,12 +1544,12 @@ impl SslContextBuilder {
     /// of those protocols on success. The [`select_next_proto`] function implements the standard
     /// protocol selection algorithm.
     ///
-    /// Requires OpenSSL 1.0.2 or LibreSSL 2.6.1 or newer.
+    /// Requires BoringSSL or OpenSSL 1.0.2 or LibreSSL 2.6.1 or newer.
     ///
     /// [`SslContextBuilder::set_alpn_protos`]: struct.SslContextBuilder.html#method.set_alpn_protos
     /// [`select_next_proto`]: fn.select_next_proto.html
     #[corresponds(SSL_CTX_set_alpn_select_cb)]
-    #[cfg(any(ossl102, libressl261))]
+    #[cfg(any(ossl102, libressl261, boringssl))]
     pub fn set_alpn_select_callback<F>(&mut self, callback: F)
     where
         F: for<'a> Fn(&mut SslRef, &'a [u8]) -> Result<&'a [u8], AlpnError> + 'static + Sync + Send,
