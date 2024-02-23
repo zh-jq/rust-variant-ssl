@@ -615,62 +615,6 @@ pub unsafe fn SSL_CTX_set_read_ahead(ctx: *mut SSL_CTX, m: c_long) -> c_long {
     SSL_CTX_ctrl(ctx, SSL_CTRL_SET_READ_AHEAD, m, ptr::null_mut())
 }
 
-#[allow(clashing_extern_declarations)]
-extern "C" {
-    #[deprecated(note = "use SSL_CTX_set_tmp_dh_callback__fixed_rust instead")]
-    pub fn SSL_CTX_set_tmp_dh_callback(
-        ctx: *mut SSL_CTX,
-        dh: unsafe extern "C" fn(ssl: *mut SSL, is_export: c_int, keylength: c_int) -> *mut DH,
-    );
-    #[deprecated(note = "use SSL_set_tmp_dh_callback__fixed_rust instead")]
-    pub fn SSL_set_tmp_dh_callback(
-        ctx: *mut SSL,
-        dh: unsafe extern "C" fn(ssl: *mut SSL, is_export: c_int, keylength: c_int) -> *mut DH,
-    );
-    #[deprecated(note = "use SSL_CTX_set_tmp_ecdh_callback__fixed_rust instead")]
-    #[cfg(not(ossl110))]
-    pub fn SSL_CTX_set_tmp_ecdh_callback(
-        ctx: *mut SSL_CTX,
-        ecdh: unsafe extern "C" fn(
-            ssl: *mut SSL,
-            is_export: c_int,
-            keylength: c_int,
-        ) -> *mut EC_KEY,
-    );
-    #[deprecated(note = "use SSL_set_tmp_ecdh_callback__fixed_rust instead")]
-    #[cfg(not(ossl110))]
-    pub fn SSL_set_tmp_ecdh_callback(
-        ssl: *mut SSL,
-        ecdh: unsafe extern "C" fn(
-            ssl: *mut SSL,
-            is_export: c_int,
-            keylength: c_int,
-        ) -> *mut EC_KEY,
-    );
-
-    #[deprecated(note = "use SSL_CTX_callback_ctrl__fixed_rust instead")]
-    pub fn SSL_CTX_callback_ctrl(
-        ctx: *mut SSL_CTX,
-        cmd: c_int,
-        fp: Option<extern "C" fn()>,
-    ) -> c_long;
-
-    #[deprecated(note = "use SSL_CTX_set_alpn_select_cb__fixed_rust instead")]
-    #[cfg(any(ossl102, libressl261))]
-    pub fn SSL_CTX_set_alpn_select_cb(
-        ssl: *mut SSL_CTX,
-        cb: extern "C" fn(
-            ssl: *mut SSL,
-            out: *mut *const c_uchar,
-            outlen: *mut c_uchar,
-            inbuf: *const c_uchar,
-            inlen: c_uint,
-            arg: *mut c_void,
-        ) -> c_int,
-        arg: *mut c_void,
-    );
-}
-
 #[cfg(not(ossl110))]
 pub unsafe fn SSL_session_reused(ssl: *mut SSL) -> c_int {
     SSL_ctrl(ssl, SSL_CTRL_GET_SESSION_REUSED, 0, ptr::null_mut()) as c_int
