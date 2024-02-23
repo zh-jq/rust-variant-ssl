@@ -5028,7 +5028,7 @@ cfg_if! {
 
             cfg_if! {
                 if #[cfg(not(boringssl))] {
-                    ffi::SSL_CTX_get_ex_new_index(0, ptr::null_mut(), None, None, Some(f))
+                    ffi::SSL_CTX_get_ex_new_index(0, ptr::null_mut(), None, None, f)
                 } else {
                     ffi::SSL_CTX_get_ex_new_index(0, ptr::null_mut(), ptr::null_mut(), None, f)
                 }
@@ -5046,7 +5046,7 @@ cfg_if! {
             });
 
             #[cfg(not(boringssl))]
-            return ffi::SSL_get_ex_new_index(0, ptr::null_mut(), None, None, Some(f));
+            return ffi::SSL_get_ex_new_index(0, ptr::null_mut(), None, None, f);
             #[cfg(boringssl)]
             return ffi::SSL_get_ex_new_index(0, ptr::null_mut(), ptr::null_mut(), None, f);
         }
