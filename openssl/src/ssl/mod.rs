@@ -2085,10 +2085,7 @@ impl SslContextBuilder {
     #[cfg(ossl111)]
     pub fn set_client_hello_callback<F>(&mut self, callback: F)
     where
-        F: Fn(&mut SslRef, &mut SslAlert) -> Result<(), ClientHelloError>
-            + 'static
-            + Sync
-            + Send,
+        F: Fn(&mut SslRef, &mut SslAlert) -> Result<(), ClientHelloError> + 'static + Sync + Send,
     {
         unsafe {
             let ptr = self.set_ex_data_inner(SslContext::cached_ex_index::<F>(), callback);

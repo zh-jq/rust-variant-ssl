@@ -688,10 +688,7 @@ pub unsafe extern "C" fn raw_client_hello<F>(
     arg: *mut c_void,
 ) -> c_int
 where
-    F: Fn(&mut SslRef, &mut SslAlert) -> Result<(), ClientHelloError>
-        + 'static
-        + Sync
-        + Send,
+    F: Fn(&mut SslRef, &mut SslAlert) -> Result<(), ClientHelloError> + 'static + Sync + Send,
 {
     let ssl = SslRef::from_ptr_mut(ssl);
     let callback = arg as *const F;
