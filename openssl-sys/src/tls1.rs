@@ -16,6 +16,7 @@ pub const DTLS1_2_VERSION: c_int = 0xFEFD;
 
 pub const TLS1_AD_DECODE_ERROR: c_int = 50;
 pub const TLS1_AD_UNRECOGNIZED_NAME: c_int = 112;
+pub const TLS1_AD_NO_APPLICATION_PROTOCOL: c_int = 120;
 
 pub const TLSEXT_NAMETYPE_host_name: c_int = 0;
 pub const TLSEXT_STATUSTYPE_ocsp: c_int = 1;

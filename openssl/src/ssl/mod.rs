@@ -652,6 +652,7 @@ impl SslAlert {
     pub const UNRECOGNIZED_NAME: SslAlert = SslAlert(ffi::SSL_AD_UNRECOGNIZED_NAME);
     pub const ILLEGAL_PARAMETER: SslAlert = SslAlert(ffi::SSL_AD_ILLEGAL_PARAMETER);
     pub const DECODE_ERROR: SslAlert = SslAlert(ffi::SSL_AD_DECODE_ERROR);
+    pub const NO_APPLICATION_PROTOCOL: SslAlert = SslAlert(ffi::SSL_AD_NO_APPLICATION_PROTOCOL);
 }
 
 /// An error returned from an ALPN selection callback.
