@@ -22,11 +22,11 @@ use crate::ocsp::{OcspResponse, OcspResponseStatus};
 use crate::pkey::{Id, PKey};
 use crate::srtp::SrtpProfileId;
 use crate::ssl::test::server::Server;
+#[cfg(ossl111)]
+use crate::ssl::ExtensionContext;
 #[cfg(any(ossl110, ossl111, libressl261))]
 use crate::ssl::SslVersion;
 use crate::ssl::{self, NameType, SslConnectorBuilder};
-#[cfg(ossl111)]
-use crate::ssl::{ClientHelloResponse, ExtensionContext};
 use crate::ssl::{
     Error, HandshakeError, MidHandshakeSslStream, ShutdownResult, ShutdownState, Ssl, SslAcceptor,
     SslAcceptorBuilder, SslConnector, SslContext, SslContextBuilder, SslFiletype, SslMethod,
@@ -1510,7 +1510,7 @@ fn client_hello() {
             .is_ok());
 
         CALLED_BACK.store(true, Ordering::SeqCst);
-        Ok(ClientHelloResponse::SUCCESS)
+        Ok(())
     });
 
     let server = server.build();
