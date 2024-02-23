@@ -2218,10 +2218,7 @@ impl SslContext {
     {
         unsafe {
             ffi::init();
-            #[cfg(boringssl)]
             let idx = cvt_n(get_new_idx(Some(free_data_box::<T>)))?;
-            #[cfg(not(boringssl))]
-            let idx = cvt_n(get_new_idx(free_data_box::<T>))?;
             Ok(Index::from_raw(idx))
         }
     }
@@ -2679,10 +2676,7 @@ impl Ssl {
     {
         unsafe {
             ffi::init();
-            #[cfg(boringssl)]
             let idx = cvt_n(get_new_ssl_idx(Some(free_data_box::<T>)))?;
-            #[cfg(not(boringssl))]
-            let idx = cvt_n(get_new_ssl_idx(free_data_box::<T>))?;
             Ok(Index::from_raw(idx))
         }
     }
@@ -5002,7 +4996,7 @@ cfg_if! {
                 ptr::null_mut(),
                 None,
                 None,
-                Some(f),
+                f,
             )
         }
 
@@ -5013,7 +5007,7 @@ cfg_if! {
                 ptr::null_mut(),
                 None,
                 None,
-                Some(f),
+                f,
             )
         }
     } else {

@@ -23,9 +23,9 @@ extern "C" {
         class_index: c_int,
         argl: c_long,
         argp: *mut c_void,
-        new_func: Option<CRYPTO_EX_new>,
-        dup_func: Option<CRYPTO_EX_dup>,
-        free_func: Option<CRYPTO_EX_free>,
+        new_func: CRYPTO_EX_new,
+        dup_func: CRYPTO_EX_dup,
+        free_func: CRYPTO_EX_free,
     ) -> c_int;
 
     #[cfg(not(ossl110))]

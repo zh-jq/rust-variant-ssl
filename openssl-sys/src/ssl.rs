@@ -577,9 +577,9 @@ cfg_if! {
         pub unsafe fn SSL_get_ex_new_index(
             l: c_long,
             p: *mut c_void,
-            newf: Option<CRYPTO_EX_new>,
-            dupf: Option<CRYPTO_EX_dup>,
-            freef: Option<CRYPTO_EX_free>,
+            newf: CRYPTO_EX_new,
+            dupf: CRYPTO_EX_dup,
+            freef: CRYPTO_EX_free,
         ) -> c_int {
             CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_SSL, l, p, newf, dupf, freef)
         }
@@ -590,9 +590,9 @@ cfg_if! {
         pub unsafe fn SSL_CTX_get_ex_new_index(
             l: c_long,
             p: *mut c_void,
-            newf: Option<CRYPTO_EX_new>,
-            dupf: Option<CRYPTO_EX_dup>,
-            freef: Option<CRYPTO_EX_free>,
+            newf: CRYPTO_EX_new,
+            dupf: CRYPTO_EX_dup,
+            freef: CRYPTO_EX_free,
         ) -> c_int {
             CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_SSL_CTX, l, p, newf, dupf, freef)
         }
