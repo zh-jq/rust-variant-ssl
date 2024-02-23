@@ -104,9 +104,17 @@ fn main() {
     // rerun-if-changed causes openssl-sys to rebuild if the openssl include
     // dir has changed since the last build. However, this causes a rebuild
     // every time when vendoring so we disable it.
-    #[cfg(not(any(feature = "vendored", feature = "tongsuo", feature = "aws-lc")))]
-    if let Some(printable_include) = include_dir.join("openssl").to_str() {
-        println!("cargo:rerun-if-changed={}", printable_include);
+    let potential_path = include_dir.join("openssl");
+    if potential_path.exists()
+        && !cfg!(any(
+            feature = "vendored",
+            feature = "tongsuo",
+            feature = "aws-lc"
+        ))
+    {
+        if let Some(printable_include) = potential_path.to_str() {
+            println!("cargo:rerun-if-changed={}", printable_include);
+        }
     }
 
     if !lib_dirs.iter().all(|p| p.exists()) {
