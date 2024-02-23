@@ -29,7 +29,7 @@ use crate::ssl::{
 #[cfg(boringssl)]
 use crate::ssl::{ClientHello, SelectCertError};
 #[cfg(ossl111)]
-use crate::ssl::{ClientHelloResponse, ExtensionContext};
+use crate::ssl::{ClientHelloError, ExtensionContext};
 #[cfg(ossl111)]
 use crate::util::ForeignTypeRefExt;
 #[cfg(ossl111)]
@@ -688,7 +688,7 @@ pub unsafe extern "C" fn raw_client_hello<F>(
     arg: *mut c_void,
 ) -> c_int
 where
-    F: Fn(&mut SslRef, &mut SslAlert) -> Result<ClientHelloResponse, ErrorStack>
+    F: Fn(&mut SslRef, &mut SslAlert) -> Result<(), ClientHelloError>
         + 'static
         + Sync
         + Send,
@@ -700,11 +700,8 @@ where
     let r = (*callback)(ssl, &mut alert);
     *al = alert.0;
     match r {
-        Ok(c) => c.0,
-        Err(e) => {
-            e.put();
-            ffi::SSL_CLIENT_HELLO_ERROR
-        }
+        Ok(()) => ffi::SSL_CLIENT_HELLO_SUCCESS,
+        Err(e) => e.0,
     }
 }
 

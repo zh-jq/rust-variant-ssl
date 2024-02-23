@@ -674,20 +674,20 @@ impl AlpnError {
     pub const NOACK: AlpnError = AlpnError(ffi::SSL_TLSEXT_ERR_NOACK);
 }
 
-/// The result of a client hello callback.
+/// An error returned from a client hello callback.
 ///
 /// Requires OpenSSL 1.1.1 or newer.
 #[cfg(ossl111)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct ClientHelloResponse(c_int);
+pub struct ClientHelloError(c_int);
 
 #[cfg(ossl111)]
-impl ClientHelloResponse {
-    /// Continue the handshake.
-    pub const SUCCESS: ClientHelloResponse = ClientHelloResponse(ffi::SSL_CLIENT_HELLO_SUCCESS);
+impl ClientHelloError {
+    /// Terminate the connection.
+    pub const ERROR: ClientHelloError = ClientHelloError(ffi::SSL_CLIENT_HELLO_ERROR);
 
     /// Return from the handshake with an `ErrorCode::WANT_CLIENT_HELLO_CB` error.
-    pub const RETRY: ClientHelloResponse = ClientHelloResponse(ffi::SSL_CLIENT_HELLO_RETRY);
+    pub const RETRY: ClientHelloError = ClientHelloError(ffi::SSL_CLIENT_HELLO_RETRY);
 }
 
 /// An error returned from a certificate selection callback.
@@ -2085,7 +2085,7 @@ impl SslContextBuilder {
     #[cfg(ossl111)]
     pub fn set_client_hello_callback<F>(&mut self, callback: F)
     where
-        F: Fn(&mut SslRef, &mut SslAlert) -> Result<ClientHelloResponse, ErrorStack>
+        F: Fn(&mut SslRef, &mut SslAlert) -> Result<(), ClientHelloError>
             + 'static
             + Sync
             + Send,
