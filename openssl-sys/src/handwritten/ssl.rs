@@ -852,9 +852,9 @@ extern "C" {
     pub fn SSL_get_ex_new_index(
         argl: c_long,
         argp: *mut c_void,
-        new_func: Option<CRYPTO_EX_new>,
-        dup_func: Option<CRYPTO_EX_dup>,
-        free_func: Option<CRYPTO_EX_free>,
+        new_func: CRYPTO_EX_new,
+        dup_func: CRYPTO_EX_dup,
+        free_func: CRYPTO_EX_free,
     ) -> c_int;
 
     pub fn SSL_set_ex_data(ssl: *mut SSL, idx: c_int, data: *mut c_void) -> c_int;
@@ -864,9 +864,9 @@ extern "C" {
     pub fn SSL_CTX_get_ex_new_index(
         argl: c_long,
         argp: *mut c_void,
-        new_func: Option<CRYPTO_EX_new>,
-        dup_func: Option<CRYPTO_EX_dup>,
-        free_func: Option<CRYPTO_EX_free>,
+        new_func: CRYPTO_EX_new,
+        dup_func: CRYPTO_EX_dup,
+        free_func: CRYPTO_EX_free,
     ) -> c_int;
 
     pub fn SSL_CTX_set_ex_data(ctx: *mut SSL_CTX, idx: c_int, data: *mut c_void) -> c_int;
