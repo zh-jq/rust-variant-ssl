@@ -1683,6 +1683,18 @@ impl SslContextBuilder {
         unsafe { ffi::SSL_CTX_set_grease_enabled(self.as_ptr(), enabled as c_int) }
     }
 
+    /// Configures whether sockets on ctx should permute extensions.
+    ///
+    /// This corresponds to [`SSL_CTX_set_permute_extensions`].
+    ///
+    /// [`SSL_CTX_set_permute_extensions`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_set_permute_extensions
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub fn set_permute_extensions(&mut self, enabled: bool) {
+        unsafe { ffi::SSL_CTX_set_permute_extensions(self.as_ptr(), enabled as c_int) }
+    }
+
     /// Enable the processing of signed certificate timestamps (SCTs) for all connections that share the given SSL context.
     #[corresponds(SSL_CTX_enable_ct)]
     #[cfg(ossl111)]
@@ -3401,6 +3413,18 @@ impl SslRef {
     #[cfg(boringssl)]
     pub fn enable_signed_cert_timestamps(&mut self) {
         unsafe { ffi::SSL_enable_signed_cert_timestamps(self.as_ptr()) }
+    }
+
+    /// Configures whether sockets on ssl should permute extensions.
+    ///
+    /// This corresponds to [`SSL_set_permute_extensions`].
+    ///
+    /// [`SSL_set_permute_extensions`]: https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_set_permute_extensions
+    ///
+    /// Requires BoringSSL.
+    #[cfg(boringssl)]
+    pub fn set_permute_extensions(&mut self, enabled: bool) {
+        unsafe { ffi::SSL_set_permute_extensions(self.as_ptr(), enabled as c_int) }
     }
 
     /// Enable the processing of signed certificate timestamps (SCTs) for the given SSL connection.
