@@ -200,6 +200,9 @@ jobs:
             - target: arm-unknown-linux-gnueabihf
               library:
                 name: aws-lc
+            - target: i686-unknown-linux-gnu
+              library:
+                name: boringssl
             - bindgen: true
               library:
                 name: boringssl
