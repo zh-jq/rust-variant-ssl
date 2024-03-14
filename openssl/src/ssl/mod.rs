@@ -60,8 +60,6 @@
 #[cfg(ossl300)]
 use crate::cvt_long;
 use crate::dh::{Dh, DhRef};
-#[cfg(all(ossl101, not(ossl110)))]
-use crate::ec::EcKey;
 use crate::ec::EcKeyRef;
 use crate::error::ErrorStack;
 use crate::ex_data::Index;
