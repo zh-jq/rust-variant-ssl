@@ -16,8 +16,6 @@ use std::str;
 use std::sync::Arc;
 
 use crate::dh::Dh;
-#[cfg(all(ossl101, not(ossl110)))]
-use crate::ec::EcKey;
 use crate::error::ErrorStack;
 use crate::pkey::Params;
 #[cfg(any(ossl102, libressl261, boringssl))]
