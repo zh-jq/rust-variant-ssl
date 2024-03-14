@@ -563,11 +563,6 @@ impl X509Ref {
         ffi::X509_pubkey_digest
     }
 
-    #[deprecated(since = "0.10.9", note = "renamed to digest")]
-    pub fn fingerprint(&self, hash_type: MessageDigest) -> Result<Vec<u8>, ErrorStack> {
-        self.digest(hash_type).map(|b| b.to_vec())
-    }
-
     /// Returns the certificate's Not After validity period.
     #[corresponds(X509_getm_notAfter)]
     pub fn not_after(&self) -> &Asn1TimeRef {

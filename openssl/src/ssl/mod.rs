@@ -1047,27 +1047,6 @@ impl SslContextBuilder {
         unsafe { cvt(ffi::SSL_CTX_set_tmp_ecdh(self.as_ptr(), key.as_ptr()) as c_int).map(|_| ()) }
     }
 
-    /// Sets the callback which will generate parameters to be used during ephemeral elliptic curve
-    /// Diffie-Hellman key exchange.
-    ///
-    /// The callback is provided with a reference to the `Ssl` for the session, as well as a boolean
-    /// indicating if the selected cipher is export-grade, and the key length. The export and key
-    /// length options are archaic and should be ignored in almost all cases.
-    ///
-    /// Requires OpenSSL 1.0.1 or 1.0.2.
-    #[corresponds(SSL_CTX_set_tmp_ecdh_callback)]
-    #[cfg(all(ossl101, not(ossl110)))]
-    #[deprecated(note = "this function leaks memory and does not exist on newer OpenSSL versions")]
-    pub fn set_tmp_ecdh_callback<F>(&mut self, callback: F)
-    where
-        F: Fn(&mut SslRef, bool, u32) -> Result<EcKey<Params>, ErrorStack> + 'static + Sync + Send,
-    {
-        unsafe {
-            self.set_ex_data(SslContext::cached_ex_index::<F>(), callback);
-            ffi::SSL_CTX_set_tmp_ecdh_callback(self.as_ptr(), Some(raw_tmp_ecdh::<F>));
-        }
-    }
-
     /// Use the default locations of trusted certificates for verification.
     ///
     /// These locations are read from the `SSL_CERT_FILE` and `SSL_CERT_DIR` environment variables
@@ -1764,18 +1743,6 @@ impl SslContextBuilder {
             self.set_ex_data(SslContext::cached_ex_index::<F>(), callback);
             ffi::SSL_CTX_set_psk_client_callback(self.as_ptr(), Some(raw_client_psk::<F>));
         }
-    }
-
-    #[deprecated(since = "0.10.10", note = "renamed to `set_psk_client_callback`")]
-    #[cfg(not(osslconf = "OPENSSL_NO_PSK"))]
-    pub fn set_psk_callback<F>(&mut self, callback: F)
-    where
-        F: Fn(&mut SslRef, Option<&[u8]>, &mut [u8], &mut [u8]) -> Result<usize, ErrorStack>
-            + 'static
-            + Sync
-            + Send,
-    {
-        self.set_psk_client_callback(callback)
     }
 
     /// Sets the callback for providing an identity and pre-shared key for a TLS-PSK server.
@@ -2946,23 +2913,6 @@ impl SslRef {
         unsafe { cvt(ffi::SSL_set_tmp_ecdh(self.as_ptr(), key.as_ptr()) as c_int).map(|_| ()) }
     }
 
-    /// Like [`SslContextBuilder::set_tmp_ecdh_callback`].
-    ///
-    /// Requires OpenSSL 1.0.1 or 1.0.2.
-    #[corresponds(SSL_set_tmp_ecdh_callback)]
-    #[cfg(all(ossl101, not(ossl110)))]
-    #[deprecated(note = "this function leaks memory and does not exist on newer OpenSSL versions")]
-    pub fn set_tmp_ecdh_callback<F>(&mut self, callback: F)
-    where
-        F: Fn(&mut SslRef, bool, u32) -> Result<EcKey<Params>, ErrorStack> + 'static + Sync + Send,
-    {
-        unsafe {
-            // this needs to be in an Arc since the callback can register a new callback!
-            self.set_ex_data(Ssl::cached_ex_index(), Arc::new(callback));
-            ffi::SSL_set_tmp_ecdh_callback(self.as_ptr(), Some(raw_tmp_ecdh_ssl::<F>));
-        }
-    }
-
     /// Like [`SslContextBuilder::set_ecdh_auto`].
     ///
     /// Requires OpenSSL 1.0.2 or LibreSSL.
@@ -3096,11 +3046,6 @@ impl SslRef {
             let ptr = ffi::SSL_get_privatekey(self.as_ptr());
             PKeyRef::from_const_ptr_opt(ptr)
         }
-    }
-
-    #[deprecated(since = "0.10.5", note = "renamed to `version_str`")]
-    pub fn version(&self) -> &str {
-        self.version_str()
     }
 
     /// Returns the protocol version of the session.
@@ -4276,22 +4221,6 @@ impl<S: Read + Write> SslStream<S> {
         })
     }
 
-    /// Constructs an `SslStream` from a pointer to the underlying OpenSSL `SSL` struct.
-    ///
-    /// This is useful if the handshake has already been completed elsewhere.
-    ///
-    /// # Safety
-    ///
-    /// The caller must ensure the pointer is valid.
-    #[deprecated(
-        since = "0.10.32",
-        note = "use Ssl::from_ptr and SslStream::new instead"
-    )]
-    pub unsafe fn from_raw_parts(ssl: *mut ffi::SSL, stream: S) -> Self {
-        let ssl = Ssl::from_ptr(ssl);
-        Self::new(ssl, stream).unwrap()
-    }
-
     /// Read application data transmitted by a client before handshake completion.
     ///
     /// Useful for reducing latency, but vulnerable to replay attacks. Call
@@ -4901,21 +4830,6 @@ impl<S> SslStreamBuilder<S> {
     /// Returns a mutable reference to the `Ssl` object associated with this builder.
     pub fn ssl_mut(&mut self) -> &mut SslRef {
         &mut self.inner.ssl
-    }
-
-    /// Set the DTLS MTU size.
-    ///
-    /// It will be ignored if the value is smaller than the minimum packet size
-    /// the DTLS protocol requires.
-    ///
-    /// # Panics
-    /// This function panics if the given mtu size can't be represented in a positive `c_long` range
-    #[deprecated(note = "Use SslRef::set_mtu instead", since = "0.10.30")]
-    pub fn set_dtls_mtu_size(&mut self, mtu_size: usize) {
-        unsafe {
-            let bio = self.inner.ssl.get_raw_rbio();
-            bio::set_dtls_mtu_size::<S>(bio, mtu_size);
-        }
     }
 }
 

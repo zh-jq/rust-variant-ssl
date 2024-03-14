@@ -982,30 +982,6 @@ fn tmp_dh_callback() {
 }
 
 #[test]
-#[cfg(all(ossl101, not(ossl110)))]
-#[allow(deprecated)]
-fn tmp_ecdh_callback() {
-    use crate::ec::EcKey;
-    use crate::nid::Nid;
-
-    static CALLED_BACK: AtomicBool = AtomicBool::new(false);
-
-    let mut server = Server::builder();
-    server.ctx().set_tmp_ecdh_callback(|_, _, _| {
-        CALLED_BACK.store(true, Ordering::SeqCst);
-        EcKey::from_curve_name(Nid::X9_62_PRIME256V1)
-    });
-
-    let server = server.build();
-
-    let mut client = server.client();
-    client.ctx().set_cipher_list("ECDH").unwrap();
-    client.connect();
-
-    assert!(CALLED_BACK.load(Ordering::SeqCst));
-}
-
-#[test]
 #[cfg_attr(any(all(libressl321, not(libressl340)), boringssl), ignore)]
 fn tmp_dh_callback_ssl() {
     static CALLED_BACK: AtomicBool = AtomicBool::new(false);
@@ -1026,32 +1002,6 @@ fn tmp_dh_callback_ssl() {
     #[cfg(any(ossl111, libressl340))]
     client.ctx().set_options(super::SslOptions::NO_TLSV1_3);
     client.ctx().set_cipher_list("EDH").unwrap();
-    client.connect();
-
-    assert!(CALLED_BACK.load(Ordering::SeqCst));
-}
-
-#[test]
-#[cfg(all(ossl101, not(ossl110)))]
-#[allow(deprecated)]
-fn tmp_ecdh_callback_ssl() {
-    use crate::ec::EcKey;
-    use crate::nid::Nid;
-
-    static CALLED_BACK: AtomicBool = AtomicBool::new(false);
-
-    let mut server = Server::builder();
-    server.ssl_cb(|ssl| {
-        ssl.set_tmp_ecdh_callback(|_, _, _| {
-            CALLED_BACK.store(true, Ordering::SeqCst);
-            EcKey::from_curve_name(Nid::X9_62_PRIME256V1)
-        });
-    });
-
-    let server = server.build();
-
-    let mut client = server.client();
-    client.ctx().set_cipher_list("ECDH").unwrap();
     client.connect();
 
     assert!(CALLED_BACK.load(Ordering::SeqCst));

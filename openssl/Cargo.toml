@@ -9,13 +9,7 @@ keywords = ["crypto", "tls", "ssl", "dtls"]
 categories = ["cryptography", "api-bindings"]
 edition = "2021"
 
-# these are deprecated and don't do anything anymore
 [features]
-v101 = []
-v102 = []
-v110 = []
-v111 = []
-
 vendored = ['ffi/vendored']
 tongsuo = ['ffi/tongsuo']
 bindgen = ['ffi/bindgen']
