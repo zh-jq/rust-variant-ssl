@@ -84,16 +84,6 @@ pub unsafe fn get_mut<'a, S: 'a>(bio: *mut BIO) -> &'a mut S {
     &mut state(bio).stream
 }
 
-pub unsafe fn set_dtls_mtu_size<S>(bio: *mut BIO, mtu_size: usize) {
-    if mtu_size as u64 > c_long::max_value() as u64 {
-        panic!(
-            "Given MTU size {} can't be represented in a positive `c_long` range",
-            mtu_size
-        )
-    }
-    state::<S>(bio).dtls_mtu_size = mtu_size as c_long;
-}
-
 unsafe fn state<'a, S: 'a>(bio: *mut BIO) -> &'a mut StreamState<S> {
     &mut *(BIO_get_data(bio) as *mut _)
 }
