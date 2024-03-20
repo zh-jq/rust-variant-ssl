@@ -420,6 +420,41 @@ impl X509Ref {
         }
     }
 
+    /// Returns the extensions of the certificate.
+    #[corresponds(X509_get0_extensions)]
+    #[cfg(any(ossl111, boringssl))]
+    pub fn extensions(&self) -> Option<&StackRef<X509Extension>> {
+        unsafe {
+            let extensions = ffi::X509_get0_extensions(self.as_ptr());
+            StackRef::from_const_ptr_opt(extensions)
+        }
+    }
+
+    /// Look for an extension with nid from the extensions of the certificate.
+    #[corresponds(X509_get0_ext_by_NID)]
+    #[cfg(any(ossl111, boringssl))]
+    pub fn get_extension_location(&self, nid: Nid, lastpos: Option<i32>) -> Option<i32> {
+        let lastpos = lastpos.unwrap_or(-1);
+        unsafe {
+            let id = ffi::X509_get_ext_by_NID(self.as_ptr(), nid.as_raw(), lastpos as _);
+            if id == -1 {
+                None
+            } else {
+                Some(id)
+            }
+        }
+    }
+
+    /// Retrieves extension loc from certificate.
+    #[corresponds(X509_get_ext)]
+    #[cfg(any(ossl111, boringssl))]
+    pub fn get_extension(&self, loc: i32) -> Result<&X509ExtensionRef, ErrorStack> {
+        unsafe {
+            let ext = cvt_p(ffi::X509_get_ext(self.as_ptr(), loc as _))?;
+            Ok(X509ExtensionRef::from_ptr(ext))
+        }
+    }
+
     /// Returns this certificate's subject alternative name entries, if they exist.
     #[corresponds(X509_get_ext_d2i)]
     pub fn subject_alt_names(&self) -> Option<Stack<GeneralName>> {
