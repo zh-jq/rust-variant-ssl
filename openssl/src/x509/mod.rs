@@ -543,7 +543,7 @@ impl X509Ref {
 
     /// Returns this certificate's authority issuer name entries, if they exist.
     #[corresponds(X509_get0_authority_issuer)]
-    #[cfg(ossl111d)]
+    #[cfg(any(ossl111d, boringssl))]
     pub fn authority_issuer(&self) -> Option<&StackRef<GeneralName>> {
         unsafe {
             let stack = ffi::X509_get0_authority_issuer(self.as_ptr());
@@ -553,7 +553,7 @@ impl X509Ref {
 
     /// Returns this certificate's authority serial number, if it exists.
     #[corresponds(X509_get0_authority_serial)]
-    #[cfg(ossl111d)]
+    #[cfg(any(ossl111d, boringssl))]
     pub fn authority_serial(&self) -> Option<&Asn1IntegerRef> {
         unsafe {
             let r = ffi::X509_get0_authority_serial(self.as_ptr());
@@ -658,7 +658,7 @@ impl X509Ref {
     ///
     /// Note that `0` return value stands for version 1, `1` for version 2 and so on.
     #[corresponds(X509_get_version)]
-    #[cfg(ossl110)]
+    #[cfg(any(ossl110, boringssl))]
     #[allow(clippy::unnecessary_cast)]
     pub fn version(&self) -> i32 {
         unsafe { ffi::X509_get_version(self.as_ptr()) as i32 }
