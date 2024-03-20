@@ -1061,6 +1061,14 @@ impl X509Extension {
         }
     }
 
+    /// Construct a new SubjectAlternativeName extension
+    pub fn new_subject_alt_name(
+        stack: Stack<GeneralName>,
+        critical: bool,
+    ) -> Result<X509Extension, ErrorStack> {
+        unsafe { Self::new_internal(Nid::SUBJECT_ALT_NAME, critical, stack.as_ptr().cast()) }
+    }
+
     pub(crate) unsafe fn new_internal(
         nid: Nid,
         critical: bool,
