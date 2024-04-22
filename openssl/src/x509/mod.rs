@@ -456,12 +456,15 @@ impl X509Ref {
     }
 
     /// Returns the flag value of the key usage extension.
-    ///
-    /// If key usage is absent, u32::MAX will be returned
     #[corresponds(X509_get_key_usage)]
     #[cfg(any(ossl110, boringssl))]
-    pub fn key_usage(&self) -> u32 {
-        unsafe { ffi::X509_get_key_usage(self.as_ptr()) }
+    pub fn key_usage(&self) -> Option<u32> {
+        let flags = unsafe { ffi::X509_get_key_usage(self.as_ptr()) };
+        if flags == u32::MAX {
+            None
+        } else {
+            Some(flags)
+        }
     }
 
     /// Returns this certificate's subject alternative name entries, if they exist.
