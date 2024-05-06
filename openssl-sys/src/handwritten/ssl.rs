@@ -404,12 +404,12 @@ extern "C" {
     pub fn SSL_extension_supported(ext_type: c_uint) -> c_int;
 }
 
-#[cfg(ossl111)]
+#[cfg(any(ossl111, boringssl))]
 pub type SSL_CTX_keylog_cb_func =
     Option<unsafe extern "C" fn(ssl: *const SSL, line: *const c_char)>;
 
 extern "C" {
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, boringssl))]
     pub fn SSL_CTX_set_keylog_callback(ctx: *mut SSL_CTX, cb: SSL_CTX_keylog_cb_func);
 
     #[cfg(any(ossl111, libressl340))]
