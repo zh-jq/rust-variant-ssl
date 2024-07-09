@@ -1,3 +1,4 @@
+use crate::cipher_ctx::CipherCtxRef;
 use cfg_if::cfg_if;
 use foreign_types::ForeignType;
 use foreign_types::ForeignTypeRef;
@@ -17,12 +18,15 @@ use std::sync::Arc;
 
 use crate::dh::Dh;
 use crate::error::ErrorStack;
+use crate::hmac::HMacCtxRef;
+#[cfg(ossl300)]
+use crate::mac_ctx::MacCtxRef;
 use crate::pkey::Params;
 #[cfg(any(ossl102, libressl261, boringssl))]
 use crate::ssl::AlpnError;
 use crate::ssl::{
     try_get_session_ctx_index, SniError, Ssl, SslAlert, SslContext, SslContextRef, SslRef,
-    SslSession, SslSessionRef,
+    SslSession, SslSessionRef, TicketKeyStatus,
 };
 #[cfg(boringssl)]
 use crate::ssl::{ClientHello, SelectCertError};
@@ -294,6 +298,89 @@ where
             }
         }
     }
+}
+
+#[cfg(ossl300)]
+pub unsafe extern "C" fn raw_tlsext_ticket_key_evp<F>(
+    ssl: *mut ffi::SSL,
+    key_name: *mut c_uchar,
+    iv: *mut c_uchar,
+    cipher_ctx: *mut ffi::EVP_CIPHER_CTX,
+    mac_ctx: *mut ffi::EVP_MAC_CTX,
+    enc: c_int,
+) -> c_int
+where
+    F: Fn(
+            &mut SslRef,
+            &mut [u8],
+            &[u8],
+            &mut CipherCtxRef,
+            &mut MacCtxRef,
+            bool,
+        ) -> Result<TicketKeyStatus, ErrorStack>
+        + 'static
+        + Sync
+        + Send,
+{
+    let ssl = SslRef::from_ptr_mut(ssl);
+    let callback = ssl
+        .ssl_context()
+        .ex_data(SslContext::cached_ex_index::<F>())
+        .expect("BUG: ticket key callback missing") as *const F;
+
+    let cipher_ctx = CipherCtxRef::from_ptr_mut(cipher_ctx);
+    let mac_ctx = MacCtxRef::from_ptr_mut(mac_ctx);
+
+    let key_name =
+        unsafe { slice::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
+    let iv = unsafe { slice::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
+    (*callback)(ssl, key_name, iv, cipher_ctx, mac_ctx, enc != 0)
+        .map(|v| v.0)
+        .unwrap_or_else(|e| {
+            e.put();
+            -1
+        })
+}
+
+pub unsafe extern "C" fn raw_tlsext_ticket_key<F>(
+    ssl: *mut ffi::SSL,
+    key_name: *mut c_uchar,
+    iv: *mut c_uchar,
+    cipher_ctx: *mut ffi::EVP_CIPHER_CTX,
+    mac_ctx: *mut ffi::HMAC_CTX,
+    enc: c_int,
+) -> c_int
+where
+    F: Fn(
+            &mut SslRef,
+            &mut [u8],
+            &[u8],
+            &mut CipherCtxRef,
+            &mut HMacCtxRef,
+            bool,
+        ) -> Result<TicketKeyStatus, ErrorStack>
+        + 'static
+        + Sync
+        + Send,
+{
+    let ssl = SslRef::from_ptr_mut(ssl);
+    let callback = ssl
+        .ssl_context()
+        .ex_data(SslContext::cached_ex_index::<F>())
+        .expect("BUG: ticket key callback missing") as *const F;
+
+    let cipher_ctx = CipherCtxRef::from_ptr_mut(cipher_ctx);
+    let mac_ctx = HMacCtxRef::from_ptr_mut(mac_ctx);
+
+    let key_name =
+        unsafe { slice::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
+    let iv = unsafe { slice::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
+    (*callback)(ssl, key_name, iv, cipher_ctx, mac_ctx, enc != 0)
+        .map(|v| v.0)
+        .unwrap_or_else(|e| {
+            e.put();
+            -1
+        })
 }
 
 pub unsafe extern "C" fn raw_new_session<F>(

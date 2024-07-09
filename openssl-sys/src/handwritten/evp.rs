@@ -65,6 +65,14 @@ cfg_if! {
     }
 }
 
+#[cfg(ossl300)]
+extern "C" {
+    pub fn EVP_MAC_CTX_new(mac: *mut EVP_MAC) -> *mut EVP_MAC_CTX;
+    pub fn EVP_MAC_CTX_free(ctx: *mut EVP_MAC_CTX);
+    pub fn EVP_MAC_CTX_dup(src: *const EVP_MAC_CTX) -> *mut EVP_MAC_CTX;
+    pub fn EVP_MAC_CTX_set_params(ctx: *mut EVP_MAC_CTX, params: *const OSSL_PARAM) -> c_int;
+}
+
 cfg_if! {
     if #[cfg(ossl300)] {
         extern "C" {

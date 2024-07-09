@@ -359,6 +359,7 @@ pub const SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB_ARG: c_int = 64;
 pub const SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE: c_int = 65;
 pub const SSL_CTRL_GET_TLSEXT_STATUS_REQ_OCSP_RESP: c_int = 70;
 pub const SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP: c_int = 71;
+pub const SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB: c_int = 72;
 #[cfg(any(libressl, all(ossl101, not(ossl110))))]
 pub const SSL_CTRL_CLEAR_OPTIONS: c_int = 77;
 pub const SSL_CTRL_CLEAR_MODE: c_int = 78;

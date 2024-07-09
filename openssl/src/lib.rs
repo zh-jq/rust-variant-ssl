@@ -170,8 +170,11 @@ pub mod ex_data;
 #[cfg(not(any(libressl, ossl300)))]
 pub mod fips;
 pub mod hash;
+pub mod hmac;
 #[cfg(ossl300)]
 pub mod lib_ctx;
+#[cfg(ossl300)]
+pub mod mac_ctx;
 pub mod md;
 pub mod md_ctx;
 pub mod memcmp;
