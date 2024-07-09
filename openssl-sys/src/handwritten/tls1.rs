@@ -25,4 +25,19 @@ extern "C" {
         context: *const c_uchar,
         contextlen: size_t,
     ) -> c_int;
+
+    #[cfg(ossl300)]
+    pub fn SSL_CTX_set_tlsext_ticket_key_evp_cb(
+        ctx: *mut SSL_CTX,
+        fp: Option<
+            unsafe extern "C" fn(
+                arg1: *mut SSL,
+                arg2: *mut c_uchar,
+                arg3: *mut c_uchar,
+                arg4: *mut EVP_CIPHER_CTX,
+                arg5: *mut EVP_MAC_CTX,
+                arg6: c_int,
+            ) -> c_int,
+        >,
+    ) -> c_int;
 }

@@ -57,6 +57,7 @@
 //!     }
 //! }
 //! ```
+use crate::cipher_ctx::CipherCtxRef;
 #[cfg(ossl300)]
 use crate::cvt_long;
 use crate::dh::{Dh, DhRef};
@@ -65,6 +66,9 @@ use crate::error::ErrorStack;
 use crate::ex_data::Index;
 #[cfg(ossl111)]
 use crate::hash::MessageDigest;
+use crate::hmac::HMacCtxRef;
+#[cfg(ossl300)]
+use crate::mac_ctx::MacCtxRef;
 #[cfg(any(ossl110, libressl270))]
 use crate::nid::Nid;
 use crate::pkey::{HasPrivate, PKeyRef, Params, Private};
@@ -686,6 +690,19 @@ impl ClientHelloError {
 
     /// Return from the handshake with an `ErrorCode::WANT_CLIENT_HELLO_CB` error.
     pub const RETRY: ClientHelloError = ClientHelloError(ffi::SSL_CLIENT_HELLO_RETRY);
+}
+
+/// Session Ticket Key CB result type
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct TicketKeyStatus(c_int);
+
+impl TicketKeyStatus {
+    /// Session Ticket Key is not set/retrieved for current session
+    pub const FAILED: TicketKeyStatus = TicketKeyStatus(0);
+    /// Session Ticket Key is set, and no renew is needed
+    pub const SUCCESS: TicketKeyStatus = TicketKeyStatus(1);
+    /// Session Ticket Key is set, and a new ticket will be needed
+    pub const SUCCESS_AND_RENEW: TicketKeyStatus = TicketKeyStatus(2);
 }
 
 /// An error returned from a certificate selection callback.
@@ -1719,6 +1736,57 @@ impl SslContextBuilder {
                 ffi::SSL_CTX_set_tlsext_status_cb(self.as_ptr(), Some(raw_tlsext_status::<F>))
                     as c_int,
             )
+            .map(|_| ())
+        }
+    }
+
+    #[corresponds(SSL_CTX_set_tlsext_ticket_key_evp_cb)]
+    #[cfg(ossl300)]
+    pub fn set_ticket_key_evp_callback<F>(&mut self, callback: F) -> Result<(), ErrorStack>
+    where
+        F: Fn(
+                &mut SslRef,
+                &mut [u8],
+                &[u8],
+                &mut CipherCtxRef,
+                &mut MacCtxRef,
+                bool,
+            ) -> Result<TicketKeyStatus, ErrorStack>
+            + 'static
+            + Sync
+            + Send,
+    {
+        unsafe {
+            self.set_ex_data(SslContext::cached_ex_index::<F>(), callback);
+            cvt(ffi::SSL_CTX_set_tlsext_ticket_key_evp_cb(
+                self.as_ptr(),
+                Some(raw_tlsext_ticket_key_evp::<F>),
+            ) as c_int)
+            .map(|_| ())
+        }
+    }
+
+    #[corresponds(SSL_CTX_set_tlsext_ticket_key_cb)]
+    pub fn set_ticket_key_callback<F>(&mut self, callback: F) -> Result<(), ErrorStack>
+    where
+        F: Fn(
+                &mut SslRef,
+                &mut [u8],
+                &[u8],
+                &mut CipherCtxRef,
+                &mut HMacCtxRef,
+                bool,
+            ) -> Result<TicketKeyStatus, ErrorStack>
+            + 'static
+            + Sync
+            + Send,
+    {
+        unsafe {
+            self.set_ex_data(SslContext::cached_ex_index::<F>(), callback);
+            cvt(ffi::SSL_CTX_set_tlsext_ticket_key_cb(
+                self.as_ptr(),
+                Some(raw_tlsext_ticket_key::<F>),
+            ) as c_int)
             .map(|_| ())
         }
     }

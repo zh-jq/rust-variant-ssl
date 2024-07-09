@@ -2,6 +2,7 @@ use super::*;
 use libc::*;
 
 pub const EVP_MAX_MD_SIZE: c_uint = 64;
+pub const EVP_MAX_IV_LENGTH: c_int = 16;
 
 pub const PKCS5_SALT_LEN: c_int = 8;
 pub const PKCS12_DEFAULT_ITER: c_int = 2048;

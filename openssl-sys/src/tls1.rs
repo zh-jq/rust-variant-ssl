@@ -121,3 +121,37 @@ pub unsafe fn SSL_CTX_set_tlsext_status_type(ctx: *mut SSL_CTX, type_: c_int) ->
 pub unsafe fn SSL_CTX_get_tlsext_status_type(ctx: *mut SSL_CTX) -> c_long {
     SSL_CTX_ctrl(ctx, SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE, 0, ptr::null_mut())
 }
+
+pub const SSL_TICKET_KEY_NAME_LEN: c_int = 16;
+
+pub unsafe fn SSL_CTX_set_tlsext_ticket_key_cb(
+    ctx: *mut SSL_CTX,
+    cb: Option<
+        unsafe extern "C" fn(
+            arg1: *mut SSL,
+            arg2: *mut c_uchar,
+            arg3: *mut c_uchar,
+            arg4: *mut EVP_CIPHER_CTX,
+            arg5: *mut HMAC_CTX,
+            arg6: c_int,
+        ) -> c_int,
+    >,
+) -> c_long {
+    SSL_CTX_callback_ctrl(
+        ctx,
+        SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,
+        mem::transmute::<
+            Option<
+                unsafe extern "C" fn(
+                    *mut SSL,
+                    *mut c_uchar,
+                    *mut c_uchar,
+                    *mut EVP_CIPHER_CTX,
+                    *mut HMAC_CTX,
+                    c_int,
+                ) -> c_int,
+            >,
+            Option<unsafe extern "C" fn()>,
+        >(cb),
+    )
+}
