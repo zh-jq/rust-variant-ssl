@@ -172,5 +172,8 @@ fn main() {
         if version >= 0x3_02_00_00_0 {
             println!("cargo:rustc-cfg=ossl320");
         }
+        if version >= 0x3_03_00_00_0 {
+            println!("cargo:rustc-cfg=ossl330");
+        }
     }
 }
