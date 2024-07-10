@@ -32,4 +32,4 @@ vcpkg = "0.2.8"
 
 # We don't actually use metadeps for annoying reasons but this is still here for tooling
 [package.metadata.pkg-config]
-openssl = "1.0.1"
+openssl = "1.1.0"
