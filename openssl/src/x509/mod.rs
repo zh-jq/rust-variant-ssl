@@ -1521,7 +1521,7 @@ impl X509PubkeyRef {
                 self.as_ptr(),
             ))?;
 
-            Ok(slice::from_raw_parts(pk, pkt_len as usize))
+            Ok(util::from_raw_parts(pk, pkt_len as usize))
         }
     }
 }

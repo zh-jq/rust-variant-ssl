@@ -332,8 +332,8 @@ where
     let mac_ctx = MacCtxRef::from_ptr_mut(mac_ctx);
 
     let key_name =
-        unsafe { slice::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
-    let iv = unsafe { slice::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
+        unsafe { util::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
+    let iv = unsafe { util::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
     (*callback)(ssl, key_name, iv, cipher_ctx, mac_ctx, enc != 0)
         .map(|v| v.0)
         .unwrap_or_else(|e| {
@@ -373,8 +373,8 @@ where
     let mac_ctx = HMacCtxRef::from_ptr_mut(mac_ctx);
 
     let key_name =
-        unsafe { slice::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
-    let iv = unsafe { slice::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
+        unsafe { util::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
+    let iv = unsafe { util::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
     (*callback)(ssl, key_name, iv, cipher_ctx, mac_ctx, enc != 0)
         .map(|v| v.0)
         .unwrap_or_else(|e| {
@@ -764,13 +764,13 @@ where
     F: Fn(&[u8], &mut [u8]) -> usize + Sync + Send + 'static,
 {
     let ssl = SslRef::from_ptr_mut(ssl);
-    let in_buf = slice::from_raw_parts(in_, in_len);
+    let in_buf = util::from_raw_parts(in_, in_len);
     let mut out_ptr = ptr::null_mut::<u8>();
     let decompressed = ffi::CRYPTO_BUFFER_alloc(&mut out_ptr, uncompressed_len);
     if decompressed.is_null() {
         return 0;
     }
-    let out_buf = slice::from_raw_parts_mut(out_ptr, uncompressed_len);
+    let out_buf = util::from_raw_parts_mut(out_ptr, uncompressed_len);
 
     let callback = ssl
         .ssl_context()
@@ -798,8 +798,8 @@ where
     F: Fn(&[u8], &mut [u8]) -> usize + Sync + Send + 'static,
 {
     let ssl = SslRef::from_ptr_mut(ssl);
-    let in_buf = slice::from_raw_parts(in_, in_len);
-    let out_buf = slice::from_raw_parts_mut(out, uncompressed_len);
+    let in_buf = util::from_raw_parts(in_, in_len);
+    let out_buf = util::from_raw_parts_mut(out, uncompressed_len);
 
     let callback = ssl
         .ssl_context()
