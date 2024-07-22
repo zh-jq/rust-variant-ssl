@@ -717,6 +717,14 @@ impl SelectCertError {
 
     /// The operation could not be completed and should be retried later.
     pub const RETRY: Self = Self(ffi::ssl_select_cert_result_t_ssl_select_cert_retry);
+
+    /// Although an encrypted ClientHelloInner was decrypted, it should be discarded.
+    /// The certificate selection callback will then be called again, passing in the
+    /// ClientHelloOuter instead. From there, the handshake will proceed
+    /// without retry_configs, to signal to the client to disable ECH.
+    /// This value may only be returned when |SSL_ech_accepted| returnes one.
+    #[cfg(bssl_google)]
+    pub const DISABLE_ECH: Self = Self(ffi::ssl_select_cert_result_t_ssl_select_cert_disable_ech);
 }
 
 /// SSL CT validation mode.
@@ -2861,6 +2869,12 @@ impl SslRef {
     #[corresponds(SSL_set_accept_state)]
     pub fn set_accept_state(&mut self) {
         unsafe { ffi::SSL_set_accept_state(self.as_ptr()) }
+    }
+
+    #[cfg(boringssl)]
+    #[corresponds(SSL_ech_accepted)]
+    pub fn ech_accepted(&self) -> bool {
+        unsafe { ffi::SSL_ech_accepted(self.as_ptr()) != 0 }
     }
 
     #[cfg(tongsuo)]
