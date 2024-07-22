@@ -79,6 +79,7 @@ use crate::ssl::bio::BioMethod;
 use crate::ssl::callbacks::*;
 use crate::ssl::error::InnerError;
 use crate::stack::{Stack, StackRef, Stackable};
+use crate::util;
 use crate::util::{ForeignTypeExt, ForeignTypeRefExt};
 use crate::x509::store::{X509Store, X509StoreBuilderRef, X509StoreRef};
 #[cfg(any(ossl102, boringssl, libressl261))]
@@ -103,7 +104,6 @@ use std::ops::{Deref, DerefMut};
 use std::panic::resume_unwind;
 use std::path::Path;
 use std::ptr;
-use std::slice;
 use std::str;
 use std::sync::{Arc, Mutex};
 
@@ -820,7 +820,7 @@ pub fn select_next_proto<'a>(server: &[u8], client: &'a [u8]) -> Option<&'a [u8]
             client.len() as c_uint,
         );
         if r == ffi::OPENSSL_NPN_NEGOTIATED {
-            Some(slice::from_raw_parts(out as *const u8, outlen as usize))
+            Some(util::from_raw_parts(out as *const u8, outlen as usize))
         } else {
             None
         }
@@ -2620,7 +2620,7 @@ impl SslSessionRef {
             let mut len = 0;
             let p = ffi::SSL_SESSION_get_id(self.as_ptr(), &mut len);
             #[allow(clippy::unnecessary_cast)]
-            slice::from_raw_parts(p as *const u8, len as usize)
+            util::from_raw_parts(p as *const u8, len as usize)
         }
     }
 
@@ -3157,7 +3157,7 @@ impl SslRef {
             if data.is_null() {
                 None
             } else {
-                Some(slice::from_raw_parts(data, len as usize))
+                Some(util::from_raw_parts(data, len as usize))
             }
         }
     }
@@ -3485,7 +3485,7 @@ impl SslRef {
             if len < 0 {
                 None
             } else {
-                Some(slice::from_raw_parts(p as *const u8, len as usize))
+                Some(util::from_raw_parts(p as *const u8, len as usize))
             }
         }
     }
@@ -3687,7 +3687,7 @@ impl SslRef {
             if len == 0 {
                 None
             } else {
-                Some(slice::from_raw_parts(ptr, len))
+                Some(util::from_raw_parts(ptr, len))
             }
         }
     }
@@ -3706,7 +3706,7 @@ impl SslRef {
             if len == 0 {
                 None
             } else {
-                Some(slice::from_raw_parts(ptr, len))
+                Some(util::from_raw_parts(ptr, len))
             }
         }
     }
@@ -3725,7 +3725,7 @@ impl SslRef {
             if len == 0 {
                 None
             } else {
-                Some(slice::from_raw_parts(ptr, len))
+                Some(util::from_raw_parts(ptr, len))
             }
         }
     }
@@ -3803,7 +3803,7 @@ impl SslRef {
             if len == 0 {
                 None
             } else {
-                Some(slice::from_raw_parts(ptr, len))
+                Some(util::from_raw_parts(ptr, len))
             }
         }
     }
@@ -4439,7 +4439,7 @@ impl<S: Read + Write> SslStream<S> {
     pub fn ssl_read(&mut self, buf: &mut [u8]) -> Result<usize, Error> {
         // SAFETY: `ssl_read_uninit` does not de-initialize the buffer.
         unsafe {
-            self.ssl_read_uninit(slice::from_raw_parts_mut(
+            self.ssl_read_uninit(util::from_raw_parts_mut(
                 buf.as_mut_ptr().cast::<MaybeUninit<u8>>(),
                 buf.len(),
             ))
@@ -4677,7 +4677,7 @@ impl<S: Read + Write> Read for SslStream<S> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         // SAFETY: `read_uninit` does not de-initialize the buffer
         unsafe {
-            self.read_uninit(slice::from_raw_parts_mut(
+            self.read_uninit(util::from_raw_parts_mut(
                 buf.as_mut_ptr().cast::<MaybeUninit<u8>>(),
                 buf.len(),
             ))

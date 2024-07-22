@@ -20,7 +20,6 @@ use std::mem;
 use std::net::IpAddr;
 use std::path::Path;
 use std::ptr;
-use std::slice;
 use std::str;
 
 use crate::asn1::{
@@ -37,7 +36,7 @@ use crate::pkey::{HasPrivate, HasPublic, PKey, PKeyRef, Public};
 use crate::ssl::SslRef;
 use crate::stack::{Stack, StackRef, Stackable};
 use crate::string::OpensslString;
-use crate::util::{ForeignTypeExt, ForeignTypeRefExt};
+use crate::util::{self, ForeignTypeExt, ForeignTypeRefExt};
 use crate::{cvt, cvt_n, cvt_p, cvt_p_const};
 use openssl_macros::corresponds;
 
@@ -712,7 +711,7 @@ impl X509Ref {
             if ptr.is_null() {
                 None
             } else {
-                Some(slice::from_raw_parts(ptr, len as usize))
+                Some(util::from_raw_parts(ptr, len as usize))
             }
         }
     }
@@ -2349,7 +2348,7 @@ impl GeneralNameRef {
             let len = ffi::ASN1_STRING_length(d as *mut _);
 
             #[allow(clippy::unnecessary_cast)]
-            let slice = slice::from_raw_parts(ptr as *const u8, len as usize);
+            let slice = util::from_raw_parts(ptr as *const u8, len as usize);
             // IA5Strings are stated to be ASCII (specifically IA5). Hopefully
             // OpenSSL checks that when loading a certificate but if not we'll
             // use this instead of from_utf8_unchecked just in case.
@@ -2403,7 +2402,7 @@ impl GeneralNameRef {
             let len = ffi::ASN1_STRING_length(d as *mut _);
 
             #[allow(clippy::unnecessary_cast)]
-            Some(slice::from_raw_parts(ptr as *const u8, len as usize))
+            Some(util::from_raw_parts(ptr as *const u8, len as usize))
         }
     }
 }
