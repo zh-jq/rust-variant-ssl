@@ -236,7 +236,7 @@ fn postprocess(include_dirs: &[PathBuf]) -> Version {
     // Never run bindgen for BoringSSL, if it was needed we already ran it.
     if version != Version::Boringssl && version != Version::Awslc {
         #[cfg(feature = "bindgen")]
-        run_bindgen::run(&include_dirs);
+        run_bindgen::run(include_dirs);
     }
 
     version
