@@ -8,6 +8,7 @@ readme = "README.md"
 keywords = ["crypto", "tls", "ssl", "dtls"]
 categories = ["cryptography", "api-bindings"]
 edition = "2021"
+rust-version = "1.70.0"
 
 [features]
 vendored = ['ffi/vendored']

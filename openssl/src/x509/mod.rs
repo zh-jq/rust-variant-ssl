@@ -2736,6 +2736,7 @@ impl X509PurposeRef {
     ///  - "any",
     ///  - "ocsphelper",
     ///  - "timestampsign"
+    ///
     /// The index can be used with `X509PurposeRef::from_idx()` to get the purpose.
     #[allow(clippy::unnecessary_cast)]
     pub fn get_by_sname(sname: &str) -> Result<c_int, ErrorStack> {
