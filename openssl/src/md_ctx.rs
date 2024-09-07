@@ -413,7 +413,7 @@ impl MdCtxRef {
     #[inline]
     pub fn reset(&mut self) -> Result<(), ErrorStack> {
         unsafe {
-            ffi::EVP_MD_CTX_reset(self.as_ptr())?;
+            ffi::EVP_MD_CTX_reset(self.as_ptr());
             Ok(())
         }
     }
