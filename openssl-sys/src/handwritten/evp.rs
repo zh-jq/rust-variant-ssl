@@ -304,11 +304,11 @@ extern "C" {
     pub fn EVP_CIPHER_CTX_new() -> *mut EVP_CIPHER_CTX;
     pub fn EVP_CIPHER_CTX_free(ctx: *mut EVP_CIPHER_CTX);
     pub fn EVP_CIPHER_CTX_copy(dst: *mut EVP_CIPHER_CTX, src: *const EVP_CIPHER_CTX) -> c_int;
-    #[cfg(ossl110)]
+    #[cfg(any(ossl110, libressl350))]
     pub fn EVP_CIPHER_CTX_reset(c: *mut EVP_CIPHER_CTX) -> c_int;
 
     pub fn EVP_MD_CTX_copy_ex(dst: *mut EVP_MD_CTX, src: *const EVP_MD_CTX) -> c_int;
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, libressl350))]
     pub fn EVP_MD_CTX_reset(ctx: *mut EVP_MD_CTX) -> c_int;
     pub fn EVP_CIPHER_CTX_set_key_length(ctx: *mut EVP_CIPHER_CTX, keylen: c_int) -> c_int;
     pub fn EVP_CIPHER_CTX_set_padding(ctx: *mut EVP_CIPHER_CTX, padding: c_int) -> c_int;

@@ -34,9 +34,10 @@ impl HMacCtxRef {
     /// This will make it suitable for new computations as if it was newly created with HMAC_CTX_new().
     #[corresponds(HMAC_CTX_reset)]
     #[cfg(any(ossl110, libressl350))]
+    #[inline]
     pub fn reset(&mut self) -> Result<(), ErrorStack> {
         unsafe {
-            cvt(ffi::HMAC_CTX_reset(self.as_ptr()))?;
+            let _ = cvt(ffi::HMAC_CTX_reset(self.as_ptr()))?;
             Ok(())
         }
     }
@@ -46,6 +47,7 @@ impl HMacCtxRef {
     /// This will make it suitable for new computations as if it was newly created with HMAC_CTX_new().
     #[corresponds(HMAC_CTX_reset)]
     #[cfg(boringssl)]
+    #[inline]
     pub fn reset(&mut self) -> Result<(), ErrorStack> {
         unsafe {
             ffi::HMAC_CTX_reset(self.as_ptr());
