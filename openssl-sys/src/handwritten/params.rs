@@ -15,4 +15,11 @@ extern "C" {
         bsize: usize,
     ) -> OSSL_PARAM;
     pub fn OSSL_PARAM_construct_end() -> OSSL_PARAM;
+    #[cfg(ossl300)]
+    pub fn OSSL_PARAM_construct_octet_string(
+        key: *const c_char,
+        buf: *mut c_void,
+        bsize: size_t,
+    ) -> OSSL_PARAM;
+
 }

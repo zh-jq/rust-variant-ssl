@@ -476,6 +476,7 @@ pub struct X509V3_CTX {
     subject_cert: *mut c_void,
     subject_req: *mut c_void,
     crl: *mut c_void,
+    #[cfg(not(libressl400))]
     db_meth: *mut c_void,
     db: *mut c_void,
     #[cfg(ossl300)]
@@ -1142,3 +1143,8 @@ pub struct OSSL_PARAM {
     data_size: size_t,
     return_size: size_t,
 }
+
+#[cfg(ossl300)]
+pub enum EVP_KDF {}
+#[cfg(ossl300)]
+pub enum EVP_KDF_CTX {}

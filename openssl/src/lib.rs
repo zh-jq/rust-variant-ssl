@@ -171,6 +171,7 @@ pub mod ex_data;
 pub mod fips;
 pub mod hash;
 pub mod hmac;
+pub mod kdf;
 #[cfg(ossl300)]
 pub mod lib_ctx;
 #[cfg(ossl300)]
