@@ -7,6 +7,7 @@ cfg_if! {
         extern "C" {
             pub fn HMAC_CTX_new() -> *mut HMAC_CTX;
             pub fn HMAC_CTX_free(ctx: *mut HMAC_CTX);
+            pub fn HMAC_CTX_reset(ctx: *mut HMAC_CTX) -> c_int;
         }
     } else {
         extern "C" {

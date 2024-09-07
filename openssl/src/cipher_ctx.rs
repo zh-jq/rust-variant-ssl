@@ -105,6 +105,18 @@ impl CipherCtx {
 }
 
 impl CipherCtxRef {
+    /// Clears all information from a cipher context
+    ///
+    /// This will free up any allocated memory associated with it, except the ctx itself
+    #[corresponds(EVP_CIPHER_CTX_reset)]
+    #[cfg(any(ossl110, boringssl))]
+    pub fn reset(&mut self) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::EVP_CIPHER_CTX_reset(self.as_ptr()))?;
+            Ok(())
+        }
+    }
+
     #[corresponds(EVP_CIPHER_CTX_copy)]
     pub fn copy(&mut self, src: &CipherCtxRef) -> Result<(), ErrorStack> {
         unsafe {
