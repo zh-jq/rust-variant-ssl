@@ -109,10 +109,22 @@ impl CipherCtxRef {
     ///
     /// This will free up any allocated memory associated with it, except the ctx itself
     #[corresponds(EVP_CIPHER_CTX_reset)]
-    #[cfg(any(ossl110, boringssl))]
+    #[cfg(any(ossl110, libressl350))]
     pub fn reset(&mut self) -> Result<(), ErrorStack> {
         unsafe {
             cvt(ffi::EVP_CIPHER_CTX_reset(self.as_ptr()))?;
+            Ok(())
+        }
+    }
+
+    /// Clears all information from a cipher context
+    ///
+    /// This will free up any allocated memory associated with it, except the ctx itself
+    #[corresponds(EVP_CIPHER_CTX_reset)]
+    #[cfg(boringssl)]
+    pub fn reset(&mut self) -> Result<(), ErrorStack> {
+        unsafe {
+            ffi::EVP_CIPHER_CTX_reset(self.as_ptr());
             Ok(())
         }
     }
