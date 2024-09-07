@@ -175,6 +175,8 @@ pub mod kdf;
 #[cfg(ossl300)]
 pub mod lib_ctx;
 #[cfg(ossl300)]
+pub mod mac;
+#[cfg(ossl300)]
 pub mod mac_ctx;
 pub mod md;
 pub mod md_ctx;

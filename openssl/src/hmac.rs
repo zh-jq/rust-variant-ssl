@@ -54,4 +54,51 @@ impl HMacCtxRef {
             Ok(())
         }
     }
+
+    /// Add data bytes to the MAC input.
+    #[corresponds(HMAC_Update)]
+    #[inline]
+    pub fn hmac_update(&mut self, data: &[u8]) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::HMAC_Update(
+                self.as_ptr(),
+                data.as_ptr() as *const _,
+                data.len(),
+            ))?;
+        }
+
+        Ok(())
+    }
+
+    /// Place the message authentication code in out.
+    ///
+    /// If `out` is set to `None`, an upper bound on the number of bytes required for the output buffer will be
+    /// returned.
+    #[corresponds(HMAC_Update)]
+    #[inline]
+    pub fn hmac_final(&mut self, out: Option<&mut [u8]>) -> Result<usize, ErrorStack> {
+        let mut len = out
+            .as_ref()
+            .map_or(0, |b| u32::try_from(b.len()).unwrap_or(u32::MAX));
+
+        unsafe {
+            cvt(ffi::HMAC_Final(
+                self.as_ptr(),
+                out.map_or(ptr::null_mut(), |b| b.as_mut_ptr()),
+                &mut len,
+            ))?;
+        }
+
+        Ok(len as usize)
+    }
+
+    /// Like [`Self::hmac_final`] but appends the signature to a [`Vec`].
+    pub fn hmac_final_to_vec(&mut self, out: &mut Vec<u8>) -> Result<usize, ErrorStack> {
+        let base = out.len();
+        let len = self.hmac_final(None)?;
+        out.resize(base + len, 0);
+        let len = self.hmac_final(Some(&mut out[base..]))?;
+        out.truncate(base + len);
+        Ok(len)
+    }
 }

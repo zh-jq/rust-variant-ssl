@@ -1,6 +1,9 @@
 use crate::cvt;
+use crate::cvt_p;
 use crate::error::ErrorStack;
+use crate::mac::Mac;
 use foreign_types::ForeignType;
+use openssl_macros::corresponds;
 use std::ffi::CStr;
 use std::ptr;
 
@@ -16,6 +19,17 @@ foreign_type_and_impl_send_sync! {
 }
 
 impl MacCtx {
+    /// Creates a new context.
+    #[corresponds(EVP_MAC_CTX_new)]
+    pub fn new(mac: Mac) -> Result<Self, ErrorStack> {
+        ffi::init();
+
+        unsafe {
+            let ptr = cvt_p(ffi::EVP_MAC_CTX_new(mac.as_ptr()))?;
+            Ok(MacCtx::from_ptr(ptr))
+        }
+    }
+
     /// Set key and digest
     pub fn init_ex(&mut self, key: Option<&[u8]>, md: &CStr) -> Result<(), ErrorStack> {
         let key_field_name = CStr::from_bytes_with_nul(b"key\0").unwrap();
@@ -39,5 +53,51 @@ impl MacCtx {
             cvt(ffi::EVP_MAC_CTX_set_params(self.as_ptr(), params.as_ptr()))?;
         }
         Ok(())
+    }
+
+    /// Add data bytes to the MAC input.
+    #[corresponds(EVP_MAC_update)]
+    #[inline]
+    pub fn mac_update(&mut self, data: &[u8]) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::EVP_MAC_update(
+                self.as_ptr(),
+                data.as_ptr() as *const _,
+                data.len(),
+            ))?;
+        }
+
+        Ok(())
+    }
+
+    /// Do the final computation and stores the result.
+    ///
+    /// If `out` is set to `None`, an upper bound on the number of bytes required for the output buffer will be
+    /// returned.
+    #[corresponds(EVP_MAC_final)]
+    #[inline]
+    pub fn mac_final(&mut self, out: Option<&mut [u8]>) -> Result<usize, ErrorStack> {
+        let mut len = out.as_ref().map_or(0, |b| b.len());
+
+        unsafe {
+            cvt(ffi::EVP_MAC_final(
+                self.as_ptr(),
+                out.map_or(ptr::null_mut(), |b| b.as_mut_ptr()),
+                &mut len,
+                len,
+            ))?;
+        }
+
+        Ok(len)
+    }
+
+    /// Like [`Self::mac_final`] but appends the result to a [`Vec`].
+    pub fn mac_final_to_vec(&mut self, out: &mut Vec<u8>) -> Result<usize, ErrorStack> {
+        let base = out.len();
+        let len = self.mac_final(None)?;
+        out.resize(base + len, 0);
+        let len = self.mac_final(Some(&mut out[base..]))?;
+        out.truncate(base + len);
+        Ok(len)
     }
 }
