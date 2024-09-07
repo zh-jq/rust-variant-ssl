@@ -1755,7 +1755,7 @@ impl SslContextBuilder {
         F: Fn(
                 &mut SslRef,
                 &mut [u8],
-                &[u8],
+                &mut [u8],
                 &mut CipherCtxRef,
                 &mut MacCtxRef,
                 bool,
@@ -1780,7 +1780,7 @@ impl SslContextBuilder {
         F: Fn(
                 &mut SslRef,
                 &mut [u8],
-                &[u8],
+                &mut [u8],
                 &mut CipherCtxRef,
                 &mut HMacCtxRef,
                 bool,

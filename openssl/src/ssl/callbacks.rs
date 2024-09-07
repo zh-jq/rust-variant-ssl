@@ -313,7 +313,7 @@ where
     F: Fn(
             &mut SslRef,
             &mut [u8],
-            &[u8],
+            &mut [u8],
             &mut CipherCtxRef,
             &mut MacCtxRef,
             bool,
@@ -333,7 +333,7 @@ where
 
     let key_name =
         unsafe { util::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
-    let iv = unsafe { util::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
+    let iv = unsafe { util::from_raw_parts_mut(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
     (*callback)(ssl, key_name, iv, cipher_ctx, mac_ctx, enc != 0)
         .map(|v| v.0)
         .unwrap_or_else(|e| {
@@ -354,7 +354,7 @@ where
     F: Fn(
             &mut SslRef,
             &mut [u8],
-            &[u8],
+            &mut [u8],
             &mut CipherCtxRef,
             &mut HMacCtxRef,
             bool,
@@ -374,7 +374,7 @@ where
 
     let key_name =
         unsafe { util::from_raw_parts_mut(key_name, ffi::SSL_TICKET_KEY_NAME_LEN as usize) };
-    let iv = unsafe { util::from_raw_parts(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
+    let iv = unsafe { util::from_raw_parts_mut(iv, ffi::EVP_MAX_IV_LENGTH as usize) };
     (*callback)(ssl, key_name, iv, cipher_ctx, mac_ctx, enc != 0)
         .map(|v| v.0)
         .unwrap_or_else(|e| {
