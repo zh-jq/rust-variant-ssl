@@ -85,6 +85,7 @@ impl HMacCtxRef {
     ///
     /// On entry, ctx must have been setup with init_ex
     #[corresponds(HMAC_size)]
+    #[cfg(any(ossl110, boringssl))]
     pub fn size(&self) -> usize {
         unsafe { ffi::HMAC_size(self.as_ptr()) }
     }
@@ -117,6 +118,7 @@ impl HMacCtxRef {
     }
 
     /// Like [`Self::hmac_final`] but appends the signature to a [`Vec`].
+    #[cfg(any(ossl110, boringssl))]
     pub fn hmac_final_to_vec(&mut self, out: &mut Vec<u8>) -> Result<usize, ErrorStack> {
         let base = out.len();
         out.resize(base + self.size(), 0);
