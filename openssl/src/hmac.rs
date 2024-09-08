@@ -1,5 +1,6 @@
 use crate::error::ErrorStack;
 use crate::md::MdRef;
+use crate::util::ForeignTypeRefExt;
 use crate::{cvt, cvt_p};
 use foreign_types::{ForeignType, ForeignTypeRef};
 use openssl_macros::corresponds;
@@ -81,6 +82,36 @@ impl HMacCtxRef {
         }
     }
 
+    #[corresponds(HMAC_CTX_get_md)]
+    pub fn md(&self) -> Option<&MdRef> {
+        unsafe {
+            let ptr = ffi::HMAC_CTX_get_md(self.as_ptr());
+            if ptr.is_null() {
+                None
+            } else {
+                Some(MdRef::from_const_ptr(ptr))
+            }
+        }
+    }
+
+    /// Returns the size, in bytes, of the HMAC that will be produced by ctx.
+    ///
+    /// On entry, ctx must have been setup with init_ex
+    #[corresponds(HMAC_size)]
+    #[cfg(any(ossl110, boringssl))]
+    pub fn size(&self) -> usize {
+        // HMAC_size is a macro in LibreSSL
+        unsafe { ffi::HMAC_size(self.as_ptr()) }
+    }
+
+    /// Returns the size, in bytes, of the HMAC that will be produced by ctx.
+    ///
+    /// On entry, ctx must have been setup with init_ex
+    #[cfg(not(any(ossl110, boringssl)))]
+    pub fn size(&self) -> usize {
+        self.md().map(|md| md.size()).unwrap_or_default()
+    }
+
     /// Add data bytes to the MAC input.
     #[corresponds(HMAC_Update)]
     #[inline]
@@ -106,5 +137,14 @@ impl HMacCtxRef {
         }
 
         Ok(len as usize)
+    }
+
+    /// Like [`Self::hmac_final`] but appends the signature to a [`Vec`].
+    pub fn hmac_final_to_vec(&mut self, out: &mut Vec<u8>) -> Result<usize, ErrorStack> {
+        let base = out.len();
+        out.resize(base + self.size(), 0);
+        let len = self.hmac_final(&mut out[base..])?;
+        out.truncate(base + len);
+        Ok(len)
     }
 }
