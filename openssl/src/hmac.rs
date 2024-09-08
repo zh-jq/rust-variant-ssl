@@ -81,15 +81,6 @@ impl HMacCtxRef {
         }
     }
 
-    /// Returns the size, in bytes, of the HMAC that will be produced by ctx.
-    ///
-    /// On entry, ctx must have been setup with init_ex
-    #[corresponds(HMAC_size)]
-    #[cfg(any(ossl110, boringssl))]
-    pub fn size(&self) -> usize {
-        unsafe { ffi::HMAC_size(self.as_ptr()) }
-    }
-
     /// Add data bytes to the MAC input.
     #[corresponds(HMAC_Update)]
     #[inline]
@@ -115,15 +106,5 @@ impl HMacCtxRef {
         }
 
         Ok(len as usize)
-    }
-
-    /// Like [`Self::hmac_final`] but appends the signature to a [`Vec`].
-    #[cfg(any(ossl110, boringssl))]
-    pub fn hmac_final_to_vec(&mut self, out: &mut Vec<u8>) -> Result<usize, ErrorStack> {
-        let base = out.len();
-        out.resize(base + self.size(), 0);
-        let len = self.hmac_final(&mut out[base..])?;
-        out.truncate(base + len);
-        Ok(len)
     }
 }
