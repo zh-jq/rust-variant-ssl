@@ -69,7 +69,6 @@ impl MacCtx {
         unsafe { ffi::EVP_MAC_CTX_get_block_size(self.as_ptr()) }
     }
 
-
     /// Add data bytes to the MAC input.
     #[corresponds(EVP_MAC_update)]
     #[inline]

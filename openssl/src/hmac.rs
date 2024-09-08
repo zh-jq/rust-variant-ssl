@@ -110,11 +110,7 @@ impl HMacCtxRef {
         let mut len = u32::try_from(out.len()).unwrap_or(u32::MAX);
 
         unsafe {
-            cvt(ffi::HMAC_Final(
-                self.as_ptr(),
-                out.as_mut_ptr(),
-                &mut len,
-            ))?;
+            cvt(ffi::HMAC_Final(self.as_ptr(), out.as_mut_ptr(), &mut len))?;
         }
 
         Ok(len as usize)
