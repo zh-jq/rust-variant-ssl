@@ -86,7 +86,7 @@ impl HMacCtxRef {
     /// On entry, ctx must have been setup with init_ex
     #[corresponds(HMAC_size)]
     pub fn size(&self) -> usize {
-        unsafe { ffi::HMAC_size(self.as_ptr()) as usize }
+        unsafe { ffi::HMAC_size(self.as_ptr()) }
     }
 
     /// Add data bytes to the MAC input.
