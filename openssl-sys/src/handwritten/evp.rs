@@ -78,6 +78,8 @@ extern "C" {
     pub fn EVP_MAC_CTX_free(ctx: *mut EVP_MAC_CTX);
     pub fn EVP_MAC_CTX_dup(src: *const EVP_MAC_CTX) -> *mut EVP_MAC_CTX;
     pub fn EVP_MAC_CTX_set_params(ctx: *mut EVP_MAC_CTX, params: *const OSSL_PARAM) -> c_int;
+    pub fn EVP_MAC_CTX_get_mac_size(ctx: *mut EVP_MAC_CTX) -> usize;
+    pub fn EVP_MAC_CTX_get_block_size(ctx: *mut EVP_MAC_CTX) -> usize;
 
     pub fn EVP_MAC_init(
         ctx: *mut EVP_MAC_CTX,

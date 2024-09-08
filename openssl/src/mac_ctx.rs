@@ -55,6 +55,21 @@ impl MacCtx {
         Ok(())
     }
 
+    /// Returns the MAC output size for the given context.
+    #[corresponds(EVP_MAC_CTX_get_mac_size)]
+    pub fn mac_size(&self) -> usize {
+        unsafe { ffi::EVP_MAC_CTX_get_mac_size(self.as_ptr()) }
+    }
+
+    /// Returns the MAC block size for the given context.
+    ///
+    /// Not all MAC algorithms support this.
+    #[corresponds(EVP_MAC_CTX_get_block_size)]
+    pub fn block_size(&self) -> usize {
+        unsafe { ffi::EVP_MAC_CTX_get_block_size(self.as_ptr()) }
+    }
+
+
     /// Add data bytes to the MAC input.
     #[corresponds(EVP_MAC_update)]
     #[inline]
@@ -94,8 +109,7 @@ impl MacCtx {
     /// Like [`Self::mac_final`] but appends the result to a [`Vec`].
     pub fn mac_final_to_vec(&mut self, out: &mut Vec<u8>) -> Result<usize, ErrorStack> {
         let base = out.len();
-        let len = self.mac_final(None)?;
-        out.resize(base + len, 0);
+        out.resize(base + self.mac_size(), 0);
         let len = self.mac_final(Some(&mut out[base..]))?;
         out.truncate(base + len);
         Ok(len)
