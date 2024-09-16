@@ -73,7 +73,6 @@ use crate::rsa::Padding;
 use crate::sign::RsaPssSaltlen;
 use crate::{cvt, cvt_p};
 use foreign_types::{ForeignType, ForeignTypeRef};
-#[cfg(not(boringssl))]
 use libc::c_int;
 #[cfg(ossl320)]
 use libc::c_uint;
@@ -84,8 +83,10 @@ use std::ffi::CStr;
 use std::ptr;
 
 /// HKDF modes of operation.
+#[cfg(any(ossl111, boringssl, libressl360))]
 pub struct HkdfMode(c_int);
 
+#[cfg(any(ossl111, boringssl, libressl360))]
 impl HkdfMode {
     /// This is the default mode. Calling [`derive`][PkeyCtxRef::derive] on a [`PkeyCtxRef`] set up
     /// for HKDF will perform an extract followed by an expand operation in one go. The derived key
