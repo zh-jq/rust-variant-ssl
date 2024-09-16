@@ -84,10 +84,8 @@ use std::ffi::CStr;
 use std::ptr;
 
 /// HKDF modes of operation.
-#[cfg(any(ossl111, libressl360))]
 pub struct HkdfMode(c_int);
 
-#[cfg(any(ossl111, libressl360))]
 impl HkdfMode {
     /// This is the default mode. Calling [`derive`][PkeyCtxRef::derive] on a [`PkeyCtxRef`] set up
     /// for HKDF will perform an extract followed by an expand operation in one go. The derived key
@@ -620,7 +618,7 @@ impl<T> PkeyCtxRef<T> {
 
     /// Sets the HKDF mode of operation.
     ///
-    /// Defaults to [`HkdfMode::EXTRACT_AND_EXPAND`].
+    /// Defaults to [`HkdfMode::EXTRACT_THEN_EXPAND`].
     ///
     /// WARNING: Although this API calls it a "mode", HKDF-Extract and HKDF-Expand are distinct
     /// operations with distinct inputs and distinct kinds of keys. Callers should not pass input
