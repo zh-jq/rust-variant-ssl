@@ -618,6 +618,26 @@ impl<T> PkeyCtxRef<T> {
         Ok(())
     }
 
+    /// Sets the HKDF mode of operation.
+    ///
+    /// Defaults to [`HkdfMode::EXTRACT_AND_EXPAND`].
+    ///
+    /// WARNING: Although this API calls it a "mode", HKDF-Extract and HKDF-Expand are distinct
+    /// operations with distinct inputs and distinct kinds of keys. Callers should not pass input
+    /// secrets for one operation into the other.
+    ///
+    /// Requires BoringSSL.
+    #[corresponds(EVP_PKEY_CTX_hkdf_mode)]
+    #[cfg(boringssl)]
+    #[inline]
+    pub fn set_hkdf_mode(&mut self, mode: HkdfMode) -> Result<(), ErrorStack> {
+        unsafe {
+            cvt(ffi::EVP_PKEY_CTX_hkdf_mode(self.as_ptr(), mode.0))?;
+        }
+
+        Ok(())
+    }
+
     /// Sets the input material for HKDF generation as the "key".
     ///
     /// Which input is the key depends on the "mode" (see [`set_hkdf_mode`][Self::set_hkdf_mode]).
