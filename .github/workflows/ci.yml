@@ -194,6 +194,9 @@ jobs:
                 name: aws-lc
             - target: i686-unknown-linux-gnu
               library:
+                name: aws-lc
+            - target: i686-unknown-linux-gnu
+              library:
                 name: boringssl
             - bindgen: true
               library:
