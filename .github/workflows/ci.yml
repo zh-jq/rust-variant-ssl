@@ -154,7 +154,7 @@ jobs:
             - name: openssl
               version: vendored
             - name: openssl
-              version: 3.4.0-alpha1
+              version: 3.4.0-beta1
             - name: openssl
               version: 3.3.0
             - name: openssl
@@ -172,22 +172,32 @@ jobs:
               bindgen: true
               library:
                 name: libressl
-                version: 3.8.3
+                version: 3.8.4
             - target: x86_64-unknown-linux-gnu
               bindgen: true
               library:
                 name: libressl
-                version: 3.9.1
+                version: 3.9.2
+            - target: x86_64-unknown-linux-gnu
+              bindgen: true
+              library:
+                name: libressl
+                version: 4.0.0
             - target: x86_64-unknown-linux-gnu
               bindgen: false
               library:
                 name: libressl
-                version: 3.8.3
+                version: 3.8.4
             - target: x86_64-unknown-linux-gnu
               bindgen: false
               library:
                 name: libressl
-                version: 3.9.1
+                version: 3.9.2
+            - target: x86_64-unknown-linux-gnu
+              bindgen: false
+              library:
+                name: libressl
+                version: 4.0.0
           exclude:
             - target: arm-unknown-linux-gnueabihf
               library:
