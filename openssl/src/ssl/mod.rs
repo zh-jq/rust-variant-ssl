@@ -964,7 +964,7 @@ impl SslContextBuilder {
     ///
     /// Requires AWS-LC or OpenSSL 1.0.2 or newer.
     #[corresponds(SSL_CTX_set0_verify_cert_store)]
-    #[cfg(any(ossl102, bssl_aws))]
+    #[cfg(any(ossl102, boringssl))]
     pub fn set_verify_cert_store(&mut self, cert_store: X509Store) -> Result<(), ErrorStack> {
         unsafe {
             let ptr = cert_store.as_ptr();
@@ -4083,7 +4083,7 @@ impl SslRef {
 
     /// Set the certificate store used for certificate verification
     #[corresponds(SSL_set_cert_store)]
-    #[cfg(any(ossl102, bssl_aws))]
+    #[cfg(any(ossl102, boringssl))]
     pub fn set_verify_cert_store(&mut self, cert_store: X509Store) -> Result<(), ErrorStack> {
         unsafe {
             cvt(ffi::SSL_set0_verify_cert_store(self.as_ptr(), cert_store.as_ptr()) as c_int)?;
