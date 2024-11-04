@@ -2188,7 +2188,7 @@ impl SslContextBuilder {
     ///
     /// Requires OpenSSL 1.1.1 or newer.
     #[corresponds(SSL_CTX_set_num_tickets)]
-    #[cfg(ossl111)]
+    #[cfg(any(ossl111, boringssl))]
     pub fn set_num_tickets(&mut self, num_tickets: usize) -> Result<(), ErrorStack> {
         unsafe { cvt(ffi::SSL_CTX_set_num_tickets(self.as_ptr(), num_tickets)).map(|_| ()) }
     }
@@ -2677,6 +2677,16 @@ impl SslSessionRef {
         unsafe {
             let version = ffi::SSL_SESSION_get_protocol_version(self.as_ptr());
             SslVersion(version)
+        }
+    }
+
+    /// Returns the session's TLS protocol version.
+    #[corresponds(SSL_SESSION_get_protocol_version)]
+    #[cfg(boringssl)]
+    pub fn protocol_version(&self) -> SslVersion {
+        unsafe {
+            let version = ffi::SSL_SESSION_get_protocol_version(self.as_ptr());
+            SslVersion(version as _)
         }
     }
 
