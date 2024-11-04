@@ -667,9 +667,6 @@ pub struct AlpnError(c_int);
 #[cfg(any(ossl102, libressl261, boringssl))]
 impl AlpnError {
     /// Terminate the handshake with a fatal alert.
-    ///
-    /// Requires OpenSSL 1.1.0 or newer.
-    #[cfg(any(ossl110, boringssl))]
     pub const ALERT_FATAL: AlpnError = AlpnError(ffi::SSL_TLSEXT_ERR_ALERT_FATAL);
 
     /// Do not select a protocol, but continue the handshake.
