@@ -659,7 +659,7 @@ impl SslAlert {
 
 /// An error returned from an ALPN selection callback.
 ///
-/// Requires OpenSSL 1.0.2 or LibreSSL 2.6.1 or newer.
+/// Requires BoringSSL or OpenSSL 1.0.2 or LibreSSL 2.6.1 or newer.
 #[cfg(any(ossl102, libressl261, boringssl))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct AlpnError(c_int);
