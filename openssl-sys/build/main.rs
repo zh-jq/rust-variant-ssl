@@ -19,6 +19,7 @@ mod find_normal;
 mod find_tongsuo_vendored;
 #[cfg(feature = "vendored")]
 mod find_vendored;
+#[cfg(feature = "bindgen")]
 mod run_bindgen;
 
 #[derive(PartialEq)]
@@ -336,7 +337,6 @@ See rust-openssl documentation for more information:
     if is_boringssl {
         println!("cargo:rustc-cfg=boringssl");
         println!("cargo:boringssl=true");
-        run_bindgen::run_boringssl(include_dirs);
         return Version::Boringssl;
     }
     if is_aws_lc {
